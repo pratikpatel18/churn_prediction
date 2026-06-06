@@ -1,0 +1,68 @@
+# dvc.yaml — DVC pipeline stages
+# Run:  dvc repro   (runs all stages in order)
+# Run:  dvc dag     (visualise the pipeline)
+
+stages:
+
+  ingest:
+    cmd: python -c "
+from src.data.ingest import DataIngester
+import yaml
+with open('configs/config.yaml') as f:
+    config = yaml.safe_load(f)
+ingester = DataIngester(config)
+df = ingester.ingest_csv(config['paths']['raw_data'])
+ingester.save_processed(df, 'data/raw_parquet/churn_raw.parquet')
+"
+    deps:
+      - configs/config.yaml
+      - src/data/ingest.py
+      - data/raw/churn_data.csv
+    outs:
+      - data/raw_parquet/churn_raw.parquet
+
+  feature_engineering:
+    cmd: python -c "
+from src.features.engineer import build_features
+import yaml
+with open('configs/config.yaml') as f:
+    config = yaml.safe_load(f)
+build_features(
+    input_path='data/raw_parquet/churn_raw.parquet',
+    output_path=config['paths']['features_data'],
+    config=config,
+    artifact_dir=config['paths']['model_artifacts']
+)
+"
+    deps:
+      - configs/config.yaml
+      - src/features/engineer.py
+      - data/raw_parquet/churn_raw.parquet
+    outs:
+      - data/features/churn_features.parquet
+      - artifacts/models/preprocessor.joblib
+      - artifacts/models/scaler.joblib
+
+  train:
+    cmd: python src/models/train.py
+    deps:
+      - configs/config.yaml
+      - src/models/train.py
+      - data/features/churn_features.parquet
+    metrics:
+      - artifacts/reports/metrics.json:
+          cache: false
+    params:
+      - configs/config.yaml:
+          - models.candidates
+          - hyperparameters.xgboost.n_trials
+          - hyperparameters.lightgbm.n_trials
+
+  evaluate:
+    cmd: python scripts/check_model_quality.py
+    deps:
+      - src/models/predict.py
+      - artifacts/reports/metrics.json
+    metrics:
+      - artifacts/reports/eval_results.json:
+          cache: false

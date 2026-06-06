@@ -1,0 +1,288 @@
+name: Churn Prediction — CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly full pipeline run — every Sunday at midnight UTC
+    - cron: "0 0 * * 0"
+
+env:
+  PYTHON_VERSION: "3.11"
+  MLFLOW_TRACKING_URI: http://localhost:5000
+
+# ─────────────────────────────────────────────────────────────────────
+jobs:
+
+  # ── 1. Code Quality ──────────────────────────────────────────────
+  lint-and-format:
+    name: 🔍 Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-lint-${{ hashFiles('requirements.txt') }}
+
+      - name: Install linting tools
+        run: pip install black flake8 isort
+
+      - name: Black (format check)
+        run: black --check src/ dags/ dashboard/ tests/
+
+      - name: isort (import order)
+        run: isort --check-only src/ dags/ dashboard/ tests/
+
+      - name: flake8 (style)
+        run: flake8 src/ dags/ --max-line-length=100 --ignore=E203,W503
+
+
+  # ── 2. Unit & Integration Tests ───────────────────────────────────
+  test:
+    name: 🧪 Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-format
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER:     churn_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB:       churn_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pandas numpy scikit-learn xgboost lightgbm mlflow \
+                      optuna fastapi httpx pytest pytest-asyncio pytest-cov \
+                      pydantic pyyaml loguru imbalanced-learn joblib \
+                      evidently streamlit great-expectations
+
+      - name: Copy env file
+        run: cp .env.example .env
+
+      - name: Create data directories
+        run: mkdir -p data/raw data/processed data/features data/reference artifacts/models artifacts/reports
+
+      - name: Copy sample dataset
+        run: |
+          # Use the uploaded dataset for tests
+          cp data/raw/churn_data.csv data/raw/churn_data.csv 2>/dev/null || \
+          python -c "
+          import pandas as pd, numpy as np
+          np.random.seed(42)
+          n = 500
+          df = pd.DataFrame({
+              'customerID': [f'CUST-{i:04d}' for i in range(n)],
+              'gender': np.random.choice(['Male','Female'], n),
+              'SeniorCitizen': np.random.randint(0,2,n),
+              'Partner': np.random.choice(['Yes','No'], n),
+              'Dependents': np.random.choice(['Yes','No'], n),
+              'tenure': np.random.randint(0,72,n),
+              'PhoneService': np.random.choice(['Yes','No'], n),
+              'MultipleLines': np.random.choice(['Yes','No','No phone service'], n),
+              'InternetService': np.random.choice(['DSL','Fiber optic','No'], n),
+              'OnlineSecurity': np.random.choice(['Yes','No','No internet service'], n),
+              'OnlineBackup': np.random.choice(['Yes','No','No internet service'], n),
+              'DeviceProtection': np.random.choice(['Yes','No','No internet service'], n),
+              'TechSupport': np.random.choice(['Yes','No','No internet service'], n),
+              'StreamingTV': np.random.choice(['Yes','No','No internet service'], n),
+              'StreamingMovies': np.random.choice(['Yes','No','No internet service'], n),
+              'Contract': np.random.choice(['Month-to-month','One year','Two year'], n),
+              'PaperlessBilling': np.random.choice(['Yes','No'], n),
+              'PaymentMethod': np.random.choice(['Electronic check','Mailed check','Bank transfer (automatic)','Credit card (automatic)'], n),
+              'MonthlyCharges': np.round(np.random.uniform(20,100,n), 2),
+              'TotalCharges': np.round(np.random.uniform(20,8000,n), 2),
+              'Churn': np.random.choice(['Yes','No'], n, p=[0.27, 0.73]),
+          })
+          df.to_csv('data/raw/churn_data.csv', index=False)
+          print('Sample dataset created.')
+          "
+
+      - name: Run tests with coverage
+        env:
+          DATABASE_URL: postgresql://churn_user:test_password@localhost:5432/churn_test
+          MLFLOW_TRACKING_URI: sqlite:///mlflow_test.db
+        run: |
+          pytest tests/ \
+            --cov=src \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            -v \
+            --tb=short
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+
+  # ── 3. Build Docker Images ────────────────────────────────────────
+  docker-build:
+    name: 🐳 Docker Build
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ secrets.DOCKER_USERNAME }}/churn-api
+            ${{ secrets.DOCKER_USERNAME }}/churn-dashboard
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build & push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.api
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/churn-api:latest,${{ secrets.DOCKER_USERNAME }}/churn-api:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & push Dashboard image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.streamlit
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/churn-dashboard:latest,${{ secrets.DOCKER_USERNAME }}/churn-dashboard:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+
+  # ── 4. Data Pipeline (scheduled weekly) ─────────────────────────
+  weekly-pipeline:
+    name: ⚙️ Weekly Data Pipeline
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -q pandas numpy scikit-learn xgboost lightgbm mlflow \
+                         optuna dvc pyyaml loguru imbalanced-learn joblib great-expectations
+
+      - name: Configure DVC remote
+        env:
+          DVC_GDRIVE_CREDENTIALS_DATA: ${{ secrets.DVC_GDRIVE_CREDENTIALS }}
+        run: dvc remote modify myremote gdrive_use_service_account true
+
+      - name: Run full data pipeline
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+          DATABASE_URL:        ${{ secrets.DATABASE_URL }}
+        run: python scripts/run_pipeline.py
+
+      - name: DVC push
+        run: dvc push
+
+      - name: Commit DVC files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "*.dvc" .gitignore
+          git diff --staged --quiet || git commit -m "data: weekly pipeline update [skip ci]"
+          git push
+
+
+  # ── 5. Model Evaluation Gate ──────────────────────────────────────
+  model-eval:
+    name: 🎯 Model Quality Gate
+    runs-on: ubuntu-latest
+    needs: weekly-pipeline
+    if: github.event_name == 'schedule'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install -q mlflow pandas numpy scikit-learn pyyaml
+
+      - name: Check model performance vs thresholds
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+        run: python scripts/check_model_quality.py
+
+      - name: Comment results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (fs.existsSync('model_eval_result.txt')) {
+              const body = fs.readFileSync('model_eval_result.txt', 'utf8');
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## 🎯 Model Evaluation\n\`\`\`\n${body}\n\`\`\``
+              });
+            }

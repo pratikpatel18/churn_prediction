@@ -1,0 +1,443 @@
+{
+  "timestamp": "2026-05-28T12:01:15.403801",
+  "drift_summary": {
+    "dataset_drift": false,
+    "n_drifted_features": 0,
+    "n_features": 26,
+    "share_drifted": 0.0
+  },
+  "perf_summary": {},
+  "test_results": {
+    "all_passed": false,
+    "n_tests": 85,
+    "n_failed": 4,
+    "test_details": [
+      {
+        "name": "Number of Drifted Features",
+        "status": "SUCCESS",
+        "detail": "The drift is detected for 0 out of 26 features. The test threshold is lte=5."
+      },
+      {
+        "name": "Share of Drifted Columns",
+        "status": "SUCCESS",
+        "detail": "The drift is detected for 0% features (0 out of 26). The test threshold is lte=0.3"
+      },
+      {
+        "name": "Share of Drifted Columns",
+        "status": "SUCCESS",
+        "detail": "The drift is detected for 0% features (0 out of 26). The test threshold is lt=0.3"
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **Churn** is 0.005. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **gender** is 0.019. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **SeniorCitizen** is 0.004. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **Partner** is 0.004. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **Dependents** is 0.005. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **tenure** is 0.011. The drift detection method is Wasserstein distance (normed). The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **PhoneService** is 0.006. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **MultipleLines** is 0.012. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **OnlineSecurity** is 0. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **OnlineBackup** is 0.004. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **DeviceProtection** is 0.008. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **TechSupport** is 0.001. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **StreamingTV** is 0.004. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **StreamingMovies** is 0.004. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **Contract** is 0.01. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **PaperlessBilling** is 0.011. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **MonthlyCharges** is 0.01. The drift detection method is Wasserstein distance (normed). The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **TotalCharges** is 0.011. The drift detection method is Wasserstein distance (normed). The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **charge_ratio** is 0.023. The drift detection method is Wasserstein distance (normed). The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **services_count** is 0.018. The drift detection method is Wasserstein distance (normed). The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **has_internet** is 0.004. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **high_risk_contract** is 0.008. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **fiber_optic** is 0.003. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **electronic_check** is 0.004. The drift detection method is Jensen-Shannon distance. The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **risk_score** is 0.015. The drift detection method is Wasserstein distance (normed). The drift detection threshold is 0.1."
+      },
+      {
+        "name": "Drift per Column",
+        "status": "SUCCESS",
+        "detail": "The drift score for the feature **charge_per_service** is 0.022. The drift detection method is Wasserstein distance (normed). The drift detection threshold is 0.1."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **Churn** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **gender** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **SeniorCitizen** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **Partner** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **Dependents** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **tenure** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **PhoneService** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **MultipleLines** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **OnlineSecurity** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **OnlineBackup** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **DeviceProtection** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **TechSupport** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **StreamingTV** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **StreamingMovies** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **Contract** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **PaperlessBilling** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **MonthlyCharges** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **TotalCharges** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **charge_ratio** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **services_count** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **has_internet** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **high_risk_contract** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **fiber_optic** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **electronic_check** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **risk_score** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "The Share of Missing Values in a Column",
+        "status": "SUCCESS",
+        "detail": "The share of missing values in the column **charge_per_service** is 0. The test threshold is lte=0 \u00b1 1e-12."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **Churn** is 0. Its share is 0.735. The test threshold is eq=0.728 \u00b1 0.0728."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **gender** is 0. Its share is 0.505. The test threshold is eq=0.522 \u00b1 0.0522."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **SeniorCitizen** is 0. Its share is 0.838. The test threshold is eq=0.833 \u00b1 0.0833."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **Partner** is 0. Its share is 0.517. The test threshold is eq=0.522 \u00b1 0.0522."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **Dependents** is 0. Its share is 0.7. The test threshold is eq=0.707 \u00b1 0.0707."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **tenure** is -1.2774445836787656. Its share is 0.087. The test threshold is eq=0.0923 \u00b1 0.00923."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **PhoneService** is 1. Its share is 0.903. The test threshold is eq=0.898 \u00b1 0.0898."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **MultipleLines** is 0. Its share is 0.578. The test threshold is eq=0.595 \u00b1 0.0595."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **OnlineSecurity** is 0. Its share is 0.713. The test threshold is eq=0.714 \u00b1 0.0714."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **OnlineBackup** is 0. Its share is 0.655. The test threshold is eq=0.661 \u00b1 0.0661."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **DeviceProtection** is 0. Its share is 0.656. The test threshold is eq=0.645 \u00b1 0.0645."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **TechSupport** is 0. Its share is 0.71. The test threshold is eq=0.708 \u00b1 0.0708."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **StreamingTV** is 0. Its share is 0.616. The test threshold is eq=0.621 \u00b1 0.0621."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **StreamingMovies** is 0. Its share is 0.612. The test threshold is eq=0.618 \u00b1 0.0618."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **Contract** is 0. Its share is 0.55. The test threshold is eq=0.561 \u00b1 0.0561."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **PaperlessBilling** is 1. Its share is 0.592. The test threshold is eq=0.608 \u00b1 0.0608."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "FAIL",
+        "detail": "The most common value in the column **MonthlyCharges** is -1.4860351280674797. Its share is 0.0087. The test threshold is eq=0.0109 \u00b1 0.00109."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "FAIL",
+        "detail": "The most common value in the column **TotalCharges** is -0.9969247568404078. Its share is 0.0016. The test threshold is eq=0.0028 \u00b1 0.00028."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **charge_ratio** is 2.9696638189039715. Its share is 0.0886. The test threshold is eq=0.0937 \u00b1 0.00937."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **services_count** is -1.0527767083528985. Its share is 0.32. The test threshold is eq=0.317 \u00b1 0.0317."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **has_internet** is 1. Its share is 0.783. The test threshold is eq=0.787 \u00b1 0.0788."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **high_risk_contract** is 1. Its share is 0.55. The test threshold is eq=0.561 \u00b1 0.0561."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **fiber_optic** is 0. Its share is 0.56. The test threshold is eq=0.557 \u00b1 0.0557."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **electronic_check** is 0. Its share is 0.664. The test threshold is eq=0.669 \u00b1 0.0669."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "SUCCESS",
+        "detail": "The most common value in the column **risk_score** is -1.2881600156090358. Its share is 0.26. The test threshold is eq=0.257 \u00b1 0.0257."
+      },
+      {
+        "name": "Share of the Most Common Value",
+        "status": "FAIL",
+        "detail": "The most common value in the column **charge_per_service** is -0.43137529501541594. Its share is 0.0092. The test threshold is eq=0.0123 \u00b1 0.00123."
+      },
+      {
+        "name": "Number of Constant Columns",
+        "status": "SUCCESS",
+        "detail": "The number of constant columns is 0. The test threshold is lte=0."
+      },
+      {
+        "name": "Number of Duplicate Columns",
+        "status": "SUCCESS",
+        "detail": "The number of duplicate columns is 0. The test threshold is lte=0."
+      },
+      {
+        "name": "Number of Duplicate Rows",
+        "status": "FAIL",
+        "detail": "The number of duplicate rows is 22. The test threshold is eq=6.67 \u00b1 0.667."
+      },
+      {
+        "name": "Highly Correlated Columns",
+        "status": "SUCCESS",
+        "detail": "The maximum correlation is 0.916. The test threshold is eq=0.919 \u00b1 0.0919."
+      }
+    ]
+  },
+  "alerts": []
+}

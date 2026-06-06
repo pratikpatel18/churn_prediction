@@ -1,0 +1,85 @@
+{
+  "expectation_suite_name": "raw_data_suite",
+  "expectations": [
+    {
+      "expectation_type": "expect_table_row_count_to_be_between",
+      "kwargs": { "min_value": 100, "max_value": 100000 },
+      "meta": { "notes": "Dataset must have at least 100 rows" }
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": { "column": "customerID" },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": { "column": "tenure" },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": { "column": "MonthlyCharges" },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": { "column": "Churn" },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_unique",
+      "kwargs": { "column": "customerID" },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": { "column": "tenure", "min_value": 0, "max_value": 72 },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": { "column": "MonthlyCharges", "min_value": 0, "max_value": 200 },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": { "column": "TotalCharges", "min_value": 0, "max_value": 10000 },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_set",
+      "kwargs": { "column": "gender", "value_set": ["Male", "Female"] },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_set",
+      "kwargs": { "column": "Churn", "value_set": [0, 1] },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_set",
+      "kwargs": {
+        "column": "Contract",
+        "value_set": ["Month-to-month", "One year", "Two year"]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_set",
+      "kwargs": {
+        "column": "InternetService",
+        "value_set": ["DSL", "Fiber optic", "No"]
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_mean_to_be_between",
+      "kwargs": { "column": "Churn", "min_value": 0.05, "max_value": 0.50 },
+      "meta": { "notes": "Churn rate sanity check — should be between 5% and 50%" }
+    }
+  ],
+  "meta": {
+    "great_expectations_version": "0.18.15",
+    "created_by": "churn_prediction_pipeline"
+  }
+}

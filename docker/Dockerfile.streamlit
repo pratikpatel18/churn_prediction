@@ -1,0 +1,56 @@
+# ─────────────────────────────────────────────────────────────────────
+# Dockerfile.streamlit
+# Streamlit Monitoring Dashboard
+# ─────────────────────────────────────────────────────────────────────
+
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    build-essential \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install Python dependencies
+RUN pip install --no-cache-dir \
+    streamlit==1.35.0 \
+    plotly==5.22.0 \
+    pandas==2.2.2 \
+    numpy==1.26.4 \
+    mlflow==2.13.0 \
+    evidently==0.4.30 \
+    scikit-learn==1.5.0 \
+    pyyaml==6.0.1 \
+    loguru==0.7.2 \
+    requests==2.32.3 \
+    python-dotenv==1.0.1
+
+# Copy source
+COPY dashboard/ /app/dashboard/
+COPY configs/   /app/configs/
+COPY src/       /app/src/
+
+# Directories
+RUN mkdir -p /app/data/features /app/data/reference /app/artifacts/reports
+
+ENV PYTHONPATH=/app
+ENV CONFIG_PATH=/app/configs/config.yaml
+
+# Streamlit config
+RUN mkdir -p /app/.streamlit
+COPY docker/streamlit_config.toml /app/.streamlit/config.toml
+
+RUN useradd -m -u 1000 appuser && chown -R appuser /app
+USER appuser
+
+EXPOSE 8501
+
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+
+CMD ["streamlit", "run", "dashboard/streamlit_app.py", \
+     "--server.port=8501", \
+     "--server.address=0.0.0.0", \
+     "--server.headless=true"]

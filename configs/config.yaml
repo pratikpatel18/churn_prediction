@@ -1,0 +1,115 @@
+# ─────────────────────────────────────────────────────────────────────
+# Central Project Configuration
+# Works for both Docker and local development
+# ─────────────────────────────────────────────────────────────────────
+
+project:
+  name: "churn_prediction"
+  version: "1.0.0"
+  description: "End-to-End Customer Churn Prediction MLOps Pipeline"
+
+paths:
+  raw_data:          "data/raw/churn_data.csv"
+  processed_data:    "data/processed/churn_processed.parquet"
+  features_data:     "data/features/churn_features.parquet"
+  reference_data:    "data/reference/reference_dataset.parquet"
+  model_artifacts:   "artifacts/models/"
+  reports:           "artifacts/reports/"
+  great_expectations: "great_expectations/"
+
+data:
+  target_column: "Churn"
+  id_column:     "customerID"
+  test_size:     0.2
+  val_size:      0.1
+  random_state:  42
+  drop_columns:
+    - "customerID"
+  categorical_columns:
+    - "gender"
+    - "Partner"
+    - "Dependents"
+    - "PhoneService"
+    - "MultipleLines"
+    - "InternetService"
+    - "OnlineSecurity"
+    - "OnlineBackup"
+    - "DeviceProtection"
+    - "TechSupport"
+    - "StreamingTV"
+    - "StreamingMovies"
+    - "Contract"
+    - "PaperlessBilling"
+    - "PaymentMethod"
+  numerical_columns:
+    - "SeniorCitizen"
+    - "tenure"
+    - "MonthlyCharges"
+    - "TotalCharges"
+
+feature_engineering:
+  tenure_bins:   [0, 12, 24, 48, 72]
+  tenure_labels: ["new", "developing", "established", "loyal"]
+  create_charge_ratio:    true
+  create_services_count:  true
+  create_risk_score:      true
+
+models:
+  candidates:
+    - "xgboost"
+    - "lightgbm"
+  optimization_metric:  "f1"
+  handle_imbalance:     true
+  imbalance_strategy:   "smote"
+
+hyperparameters:
+  logistic_regression:
+    n_trials: 30
+    search_space:
+      C:       [0.01, 100.0]
+      penalty: ["l1", "l2"]
+
+  xgboost:
+    n_trials: 50
+    search_space:
+      n_estimators:     [100, 500]
+      max_depth:        [3, 10]
+      learning_rate:    [0.01, 0.3]
+      subsample:        [0.6, 1.0]
+      colsample_bytree: [0.6, 1.0]
+      min_child_weight: [1, 7]
+      gamma:            [0.0, 1.0]
+
+  lightgbm:
+    n_trials: 50
+    search_space:
+      n_estimators:      [100, 500]
+      max_depth:         [3, 10]
+      learning_rate:     [0.01, 0.3]
+      num_leaves:        [20, 100]
+      subsample:         [0.6, 1.0]
+      colsample_bytree:  [0.6, 1.0]
+      min_child_samples: [5, 50]
+
+mlflow:
+  tracking_uri:     "http://mlflow:5000"
+  experiment_name:  "churn_prediction_v1"
+  model_name:       "churn_classifier"
+  artifact_root:    "/opt/airflow/artifacts"
+monitoring:
+  accuracy_threshold:   0.80
+  f1_threshold:         0.75
+  drift_p_value:        0.05
+  check_frequency_days: 7
+
+api:
+  host:                 "0.0.0.0"
+  port:                 8000
+  prediction_threshold: 0.5
+  log_predictions:      true
+
+airflow:
+  pipeline_schedule:   "0 2 * * 1"
+  retraining_schedule: "0 4 * * 1"
+  retries:             2
+  retry_delay_minutes: 5

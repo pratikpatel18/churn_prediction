@@ -1,0 +1,11 @@
+[core]
+    remote = myremote
+    autostage = true
+
+[remote "myremote"]
+    url = gdrive://your-gdrive-folder-id
+    # For S3:  url = s3://your-bucket/churn-dvc
+    # For GCS: url = gs://your-bucket/churn-dvc
+
+[remote "local_backup"]
+    url = /tmp/dvc_remote_backup

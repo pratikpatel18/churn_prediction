@@ -1,0 +1,236 @@
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Churn Prediction — Docker Compose Stack (Windows Docker Desktop)
+#
+# Services start order:
+#   postgres → mlflow → airflow-init → airflow-web + airflow-scheduler
+#                                   → api → streamlit
+#
+# All services communicate via "churn_net" bridge network.
+# Inside containers use service names (postgres, mlflow, api)
+# From Windows browser use localhost (localhost:8080, localhost:5000 etc.)
+# ─────────────────────────────────────────────────────────────────────
+
+# Shared Airflow environment — reused by webserver, scheduler, init
+x-airflow-common: &airflow-common
+  build:
+    context: .
+    dockerfile: docker/Dockerfile.airflow
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/airflow_db
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
+    AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+    AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "True"
+    AIRFLOW__LOGGING__LOGGING_LEVEL: INFO
+    MLFLOW_TRACKING_URI: http://mlflow:5000
+    MLFLOW_S3_ENDPOINT_URL: ""
+    MLFLOW_ARTIFACT_URI: http://mlflow:5000
+    DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    PYTHONPATH: /opt/airflow
+    CONFIG_PATH: /opt/airflow/configs/config.yaml
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./src:/opt/airflow/src
+    - ./configs:/opt/airflow/configs
+    - ./data:/opt/airflow/data
+    - ./artifacts:/opt/airflow/artifacts
+    - ./scripts:/opt/airflow/scripts
+    - airflow_logs:/opt/airflow/logs
+    - airflow_plugins:/opt/airflow/plugins
+  depends_on:
+    postgres:
+      condition: service_healthy
+    mlflow:
+      condition: service_healthy
+  networks:
+    - churn_net
+  restart: unless-stopped
+
+
+services:
+
+  # ────────────────────────────────────────────────────────────────
+  # 1. PostgreSQL — shared database for Airflow + prediction logs
+  # ────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: churn_postgres
+    environment:
+      POSTGRES_USER:     ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB:       ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - churn_net
+    restart: unless-stopped
+
+
+  # ────────────────────────────────────────────────────────────────
+  # 2. MLflow — experiment tracking + model registry
+  # ────────────────────────────────────────────────────────────────
+  mlflow:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mlflow
+    container_name: churn_mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      MLFLOW_BACKEND_STORE_URI: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/mlflow_db
+      MLFLOW_DEFAULT_ARTIFACT_ROOT: /opt/airflow/artifacts
+    volumes:
+      - ./artifacts:/opt/airflow/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks:
+      - churn_net
+    restart: unless-stopped
+
+
+  # ────────────────────────────────────────────────────────────────
+  # 3. Airflow Init — one-shot DB migration + admin user creation
+  #    Runs once and exits. Other Airflow services wait for it.
+  # ────────────────────────────────────────────────────────────────
+  airflow-init:
+    <<: *airflow-common
+    container_name: churn_airflow_init
+    command: bash -c "echo 'Waiting for postgres...' && sleep 10 && airflow db migrate && airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true && echo 'Airflow init done!'"
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ────────────────────────────────────────────────────────────────
+  # 4. Airflow Webserver — UI at http://localhost:8080
+  # ────────────────────────────────────────────────────────────────
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: churn_airflow_web
+    command: >
+      bash -c "
+        sleep 20 &&
+        airflow webserver
+      "
+    ports:
+      - "8080:8080"
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  # ────────────────────────────────────────────────────────────────
+  # 5. Airflow Scheduler — triggers DAG runs on schedule
+  # ────────────────────────────────────────────────────────────────
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: churn_airflow_scheduler
+    command: >
+      bash -c "
+        sleep 25 &&
+        airflow scheduler
+      "
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  # ────────────────────────────────────────────────────────────────
+  # 6. FastAPI — prediction API at http://localhost:8000
+  # ────────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: churn_api
+    ports:
+      - "8000:8000"
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      CONFIG_PATH: /app/configs/config.yaml
+      PYTHONPATH: /app
+    volumes:
+      - ./src:/app/src
+      - ./configs:/app/configs
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+      - ./artifacts:/opt/airflow/artifacts
+    depends_on:
+      mlflow:
+        condition: service_started 
+      postgres:
+        condition: service_started 
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    networks:
+      - churn_net
+    restart: unless-stopped
+
+
+  # ────────────────────────────────────────────────────────────────
+  # 7. Streamlit — monitoring dashboard at http://localhost:8501
+  # ────────────────────────────────────────────────────────────────
+  streamlit:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.streamlit
+    container_name: churn_dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      API_BASE_URL: http://api:8000
+      CONFIG_PATH: /app/configs/config.yaml
+      PYTHONPATH: /app
+    volumes:
+      - ./dashboard:/app/dashboard          # live code reload
+      - ./configs:/app/configs
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+      - ./src:/app/src
+    depends_on:
+      api:
+        condition:  service_started
+    networks:
+      - churn_net
+    restart: unless-stopped
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Named Volumes (persist data between container restarts)
+# ─────────────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:      # PostgreSQL database files
+  mlflow_artifacts:   # MLflow model artifacts
+  airflow_logs:       # Airflow task logs
+  airflow_plugins:    # Airflow plugins
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Networks
+# ─────────────────────────────────────────────────────────────────────
+networks:
+  churn_net:
+    driver: bridge
