@@ -35,7 +35,7 @@ jobs:
           key: ${{ runner.os }}-pip-lint-${{ hashFiles('requirements.txt') }}
 
       - name: Install linting tools
-        run: pip install black flake8 isort
+        run: pip install "black==24.3.0" flake8 "isort==5.13.2"
 
       - name: Black (format check)
         run: black --check src/ dags/ dashboard/ tests/
