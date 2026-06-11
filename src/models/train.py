@@ -26,20 +26,13 @@ from imblearn.over_sampling import SMOTE
 from loguru import logger
 from optuna.samplers import TPESampler
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    accuracy_score,
-    average_precision_score,
-    classification_report,
-    confusion_matrix,
-    f1_score,
-    log_loss,
-    matthews_corrcoef,
-    precision_recall_curve,
-    precision_score,
-    recall_score,
-    roc_auc_score,
-)
-from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
+from sklearn.metrics import (accuracy_score, average_precision_score,
+                             classification_report, confusion_matrix, f1_score,
+                             log_loss, matthews_corrcoef,
+                             precision_recall_curve, precision_score,
+                             recall_score, roc_auc_score)
+from sklearn.model_selection import (StratifiedKFold, cross_val_score,
+                                     train_test_split)
 
 warnings.filterwarnings("ignore")
 optuna.logging.set_verbosity(optuna.logging.WARNING)

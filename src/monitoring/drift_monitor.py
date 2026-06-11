@@ -5,26 +5,15 @@ from typing import Optional
 
 import pandas as pd
 from evidently import ColumnMapping
-from evidently.metric_preset import (
-    ClassificationPreset,
-    DataDriftPreset,
-    DataQualityPreset,
-    TargetDriftPreset,
-)
-from evidently.metrics import (
-    ClassificationQualityMetric,
-    ColumnDriftMetric,
-    DataDriftTable,
-    DatasetDriftMetric,
-)
+from evidently.metric_preset import (ClassificationPreset, DataDriftPreset,
+                                     DataQualityPreset, TargetDriftPreset)
+from evidently.metrics import (ClassificationQualityMetric, ColumnDriftMetric,
+                               DataDriftTable, DatasetDriftMetric)
 from evidently.report import Report
 from evidently.test_preset import DataDriftTestPreset, DataQualityTestPreset
 from evidently.test_suite import TestSuite
-from evidently.tests import (
-    TestColumnDrift,
-    TestNumberOfDriftedColumns,
-    TestShareOfDriftedColumns,
-)
+from evidently.tests import (TestColumnDrift, TestNumberOfDriftedColumns,
+                             TestShareOfDriftedColumns)
 from loguru import logger
 
 
