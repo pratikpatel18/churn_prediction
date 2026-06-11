@@ -21,11 +21,27 @@ class DataIngester:
     """
 
     EXPECTED_COLUMNS = [
-        "customerID", "gender", "SeniorCitizen", "Partner", "Dependents",
-        "tenure", "PhoneService", "MultipleLines", "InternetService",
-        "OnlineSecurity", "OnlineBackup", "DeviceProtection", "TechSupport",
-        "StreamingTV", "StreamingMovies", "Contract", "PaperlessBilling",
-        "PaymentMethod", "MonthlyCharges", "TotalCharges", "Churn",
+        "customerID",
+        "gender",
+        "SeniorCitizen",
+        "Partner",
+        "Dependents",
+        "tenure",
+        "PhoneService",
+        "MultipleLines",
+        "InternetService",
+        "OnlineSecurity",
+        "OnlineBackup",
+        "DeviceProtection",
+        "TechSupport",
+        "StreamingTV",
+        "StreamingMovies",
+        "Contract",
+        "PaperlessBilling",
+        "PaymentMethod",
+        "MonthlyCharges",
+        "TotalCharges",
+        "Churn",
     ]
 
     def __init__(self, config: dict):
@@ -120,5 +136,6 @@ class DataIngester:
 def load_config(config_path: str = "configs/config.yaml") -> dict:
     """Helper to load YAML config."""
     import yaml
+
     with open(config_path) as f:
         return yaml.safe_load(f)

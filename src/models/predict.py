@@ -12,17 +12,16 @@ from loguru import logger
 
 class ChurnPredictor:
     def __init__(self, config: dict):
-        self.config     = config
+        self.config = config
         self.model_name = config["mlflow"]["model_name"]
-        self.threshold  = config["api"].get("prediction_threshold", 0.5)
-        self.model      = None
+        self.threshold = config["api"].get("prediction_threshold", 0.5)
+        self.model = None
         self._lgbm_model = None
         self._load_model()
 
     def _load_model(self, stage: str = "Production") -> None:
         tracking_uri = os.getenv(
-            "MLFLOW_TRACKING_URI",
-            self.config["mlflow"]["tracking_uri"]
+            "MLFLOW_TRACKING_URI", self.config["mlflow"]["tracking_uri"]
         )
         mlflow.set_tracking_uri(tracking_uri)
 
@@ -98,16 +97,18 @@ class ChurnPredictor:
                 probs = raw  # already probabilities
             else:
                 # It returned class labels — we cannot get probabilities this way
-                logger.warning("pyfunc returned class labels not probabilities — retraining recommended")
+                logger.warning(
+                    "pyfunc returned class labels not probabilities — retraining recommended"
+                )
                 probs = raw.astype(float)
 
-        preds  = (probs >= self.threshold).astype(int)
+        preds = (probs >= self.threshold).astype(int)
         labels = self._risk_labels(probs)
 
         return {
             "churn_probability": probs.tolist(),
-            "churn_prediction":  preds.tolist(),
-            "risk_label":        labels,
+            "churn_prediction": preds.tolist(),
+            "risk_label": labels,
         }
 
     @staticmethod
@@ -129,6 +130,6 @@ class ChurnPredictor:
         result = self.predict(df)
         return {
             "churn_probability": result["churn_probability"][0],
-            "churn_prediction":  result["churn_prediction"][0],
-            "risk_label":        result["risk_label"][0],
+            "churn_prediction": result["churn_prediction"][0],
+            "risk_label": result["risk_label"][0],
         }

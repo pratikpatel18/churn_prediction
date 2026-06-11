@@ -1,4 +1,3 @@
-
 import json
 from datetime import datetime
 from pathlib import Path
@@ -41,9 +40,9 @@ class DriftMonitor:
     """
 
     def __init__(self, config: dict):
-        self.config      = config
-        self.target_col  = config["data"]["target_column"]
-        self.threshold   = config["monitoring"]["drift_p_value"]
+        self.config = config
+        self.target_col = config["data"]["target_column"]
+        self.threshold = config["monitoring"]["drift_p_value"]
         self.reports_dir = Path(config["paths"]["reports"])
         self.reports_dir.mkdir(parents=True, exist_ok=True)
 
@@ -53,8 +52,8 @@ class DriftMonitor:
 
     def run_full_report(
         self,
-        reference_df:   pd.DataFrame,
-        current_df:     pd.DataFrame,
+        reference_df: pd.DataFrame,
+        current_df: pd.DataFrame,
         y_true_current: Optional[pd.Series] = None,
         y_pred_current: Optional[pd.Series] = None,
     ) -> dict:
@@ -74,14 +73,16 @@ class DriftMonitor:
             cur_eval[self.target_col] = y_true_current.values
 
         # ── 1. Data Drift Report ───────────────────────────────────
-        drift_report = Report(metrics=[
-            DataDriftPreset(),
-            DataQualityPreset(),
-        ])
+        drift_report = Report(
+            metrics=[
+                DataDriftPreset(),
+                DataQualityPreset(),
+            ]
+        )
         drift_report.run(
-            reference_data = reference_df,
-            current_data   = current_df,
-            column_mapping = col_mapping,
+            reference_data=reference_df,
+            current_data=current_df,
+            column_mapping=col_mapping,
         )
 
         # ── 2. Model Performance Report (if labels available) ──────
@@ -89,18 +90,18 @@ class DriftMonitor:
         if y_pred_current is not None and y_true_current is not None:
             perf_report = Report(metrics=[ClassificationPreset()])
             perf_report.run(
-                reference_data = ref_eval if "prediction" in ref_eval.columns else None,
-                current_data   = cur_eval,
-                column_mapping = col_mapping,
+                reference_data=ref_eval if "prediction" in ref_eval.columns else None,
+                current_data=cur_eval,
+                column_mapping=col_mapping,
             )
 
         # ── 3. Extract key metrics for dashboard ───────────────────
-        drift_dict   = drift_report.as_dict()
+        drift_dict = drift_report.as_dict()
         drift_summary = self._extract_drift_summary(drift_dict)
 
         perf_summary = {}
         if perf_report:
-            perf_dict    = perf_report.as_dict()
+            perf_dict = perf_report.as_dict()
             perf_summary = self._extract_perf_summary(perf_dict)
 
         # ── 4. Save HTML reports ───────────────────────────────────
@@ -117,11 +118,11 @@ class DriftMonitor:
 
         # ── 6. Assemble final result dict ──────────────────────────
         result = {
-            "timestamp":     timestamp,
+            "timestamp": timestamp,
             "drift_summary": drift_summary,
-            "perf_summary":  perf_summary,
-            "test_results":  test_results,
-            "alerts":        self._generate_alerts(drift_summary, perf_summary),
+            "perf_summary": perf_summary,
+            "test_results": test_results,
+            "alerts": self._generate_alerts(drift_summary, perf_summary),
         }
 
         logger.info(
@@ -141,7 +142,7 @@ class DriftMonitor:
     def run_test_suite_only(
         self,
         reference_df: pd.DataFrame,
-        current_df:   pd.DataFrame,
+        current_df: pd.DataFrame,
     ) -> bool:
         """Quick pass/fail check — used by the retraining DAG."""
         col_mapping = self._build_column_mapping(reference_df)
@@ -154,8 +155,8 @@ class DriftMonitor:
 
     def _build_column_mapping(
         self,
-        df:           pd.DataFrame,
-        y:            Optional[pd.Series] = None,
+        df: pd.DataFrame,
+        y: Optional[pd.Series] = None,
     ) -> ColumnMapping:
         num_cols = df.select_dtypes(include=["number"]).columns.tolist()
         cat_cols = df.select_dtypes(include=["object", "category"]).columns.tolist()
@@ -166,40 +167,42 @@ class DriftMonitor:
                 lst.remove(self.target_col)
 
         return ColumnMapping(
-            target            = self.target_col if self.target_col in df.columns else None,
-            prediction        = "prediction" if "prediction" in df.columns else None,
-            numerical_features  = num_cols,
-            categorical_features = cat_cols,
+            target=self.target_col if self.target_col in df.columns else None,
+            prediction="prediction" if "prediction" in df.columns else None,
+            numerical_features=num_cols,
+            categorical_features=cat_cols,
         )
 
     def _run_test_suite(
         self,
         reference_df: pd.DataFrame,
-        current_df:   pd.DataFrame,
-        col_mapping:  ColumnMapping,
+        current_df: pd.DataFrame,
+        col_mapping: ColumnMapping,
     ) -> dict:
-        suite = TestSuite(tests=[
-            DataDriftTestPreset(),
-            DataQualityTestPreset(),
-            TestNumberOfDriftedColumns(lte=5),
-            TestShareOfDriftedColumns(lte=0.3),
-        ])
+        suite = TestSuite(
+            tests=[
+                DataDriftTestPreset(),
+                DataQualityTestPreset(),
+                TestNumberOfDriftedColumns(lte=5),
+                TestShareOfDriftedColumns(lte=0.3),
+            ]
+        )
         suite.run(
-            reference_data = reference_df,
-            current_data   = current_df,
-            column_mapping = col_mapping,
+            reference_data=reference_df,
+            current_data=current_df,
+            column_mapping=col_mapping,
         )
         result_dict = suite.as_dict()
-        tests       = result_dict.get("tests", [])
-        all_passed  = all(t.get("status") == "SUCCESS" for t in tests)
+        tests = result_dict.get("tests", [])
+        all_passed = all(t.get("status") == "SUCCESS" for t in tests)
 
         return {
-            "all_passed":   all_passed,
-            "n_tests":      len(tests),
-            "n_failed":     sum(1 for t in tests if t.get("status") != "SUCCESS"),
+            "all_passed": all_passed,
+            "n_tests": len(tests),
+            "n_failed": sum(1 for t in tests if t.get("status") != "SUCCESS"),
             "test_details": [
                 {
-                    "name":   t.get("name"),
+                    "name": t.get("name"),
                     "status": t.get("status"),
                     "detail": t.get("description", ""),
                 }
@@ -213,15 +216,19 @@ class DriftMonitor:
         try:
             metrics = drift_dict.get("metrics", [])
             drift_metric = next(
-                (m for m in metrics if "DatasetDriftMetric" in str(m.get("metric", ""))),
-                {}
+                (
+                    m
+                    for m in metrics
+                    if "DatasetDriftMetric" in str(m.get("metric", ""))
+                ),
+                {},
             )
             result = drift_metric.get("result", {})
             return {
-                "dataset_drift":      result.get("dataset_drift", False),
+                "dataset_drift": result.get("dataset_drift", False),
                 "n_drifted_features": result.get("number_of_drifted_columns", 0),
-                "n_features":         result.get("number_of_columns", 0),
-                "share_drifted":      result.get("share_of_drifted_columns", 0.0),
+                "n_features": result.get("number_of_columns", 0),
+                "share_drifted": result.get("share_of_drifted_columns", 0.0),
             }
         except Exception:
             return {}
@@ -232,16 +239,20 @@ class DriftMonitor:
         try:
             metrics = perf_dict.get("metrics", [])
             qual_metric = next(
-                (m for m in metrics if "ClassificationQualityMetric" in str(m.get("metric", ""))),
-                {}
+                (
+                    m
+                    for m in metrics
+                    if "ClassificationQualityMetric" in str(m.get("metric", ""))
+                ),
+                {},
             )
             current = qual_metric.get("result", {}).get("current", {})
             return {
-                "accuracy":  current.get("accuracy", None),
-                "f1":        current.get("f1",        None),
+                "accuracy": current.get("accuracy", None),
+                "f1": current.get("f1", None),
                 "precision": current.get("precision", None),
-                "recall":    current.get("recall",    None),
-                "roc_auc":   current.get("roc_auc",   None),
+                "recall": current.get("recall", None),
+                "roc_auc": current.get("roc_auc", None),
             }
         except Exception:
             return {}
@@ -250,27 +261,31 @@ class DriftMonitor:
         alerts = []
 
         if drift_summary.get("dataset_drift"):
-            alerts.append({
-                "level": "WARNING",
-                "type":  "data_drift",
-                "msg":   (
-                    f"Dataset drift detected: "
-                    f"{drift_summary.get('n_drifted_features')} / "
-                    f"{drift_summary.get('n_features')} features drifted "
-                    f"({drift_summary.get('share_drifted', 0):.0%})"
-                ),
-            })
+            alerts.append(
+                {
+                    "level": "WARNING",
+                    "type": "data_drift",
+                    "msg": (
+                        f"Dataset drift detected: "
+                        f"{drift_summary.get('n_drifted_features')} / "
+                        f"{drift_summary.get('n_features')} features drifted "
+                        f"({drift_summary.get('share_drifted', 0):.0%})"
+                    ),
+                }
+            )
 
         f1 = perf_summary.get("f1")
         if f1 is not None and f1 < self.config["monitoring"]["f1_threshold"]:
-            alerts.append({
-                "level": "CRITICAL",
-                "type":  "model_degradation",
-                "msg":   (
-                    f"Model F1 ({f1:.3f}) below threshold "
-                    f"({self.config['monitoring']['f1_threshold']}). "
-                    f"Retraining recommended."
-                ),
-            })
+            alerts.append(
+                {
+                    "level": "CRITICAL",
+                    "type": "model_degradation",
+                    "msg": (
+                        f"Model F1 ({f1:.3f}) below threshold "
+                        f"({self.config['monitoring']['f1_threshold']}). "
+                        f"Retraining recommended."
+                    ),
+                }
+            )
 
         return alerts

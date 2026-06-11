@@ -14,8 +14,12 @@ os.environ.setdefault("CONFIG_PATH", "configs/config.yaml")
 
 def pytest_configure(config):
     """Register custom pytest markers."""
-    config.addinivalue_line("markers", "slow: marks tests as slow (skip with -m 'not slow')")
-    config.addinivalue_line("markers", "integration: marks integration tests (need live services)")
+    config.addinivalue_line(
+        "markers", "slow: marks tests as slow (skip with -m 'not slow')"
+    )
+    config.addinivalue_line(
+        "markers", "integration: marks integration tests (need live services)"
+    )
     config.addinivalue_line("markers", "api: marks API endpoint tests")
 
 
@@ -23,9 +27,13 @@ def pytest_configure(config):
 def create_test_dirs():
     """Create required directories before any tests run."""
     dirs = [
-        "data/raw", "data/processed", "data/features",
-        "data/reference", "data/raw_parquet",
-        "artifacts/models", "artifacts/reports",
+        "data/raw",
+        "data/processed",
+        "data/features",
+        "data/reference",
+        "data/raw_parquet",
+        "artifacts/models",
+        "artifacts/reports",
     ]
     for d in dirs:
         Path(d).mkdir(parents=True, exist_ok=True)

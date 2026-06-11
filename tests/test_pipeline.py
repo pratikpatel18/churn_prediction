@@ -1,5 +1,3 @@
-
-
 import json
 import sys
 import warnings
@@ -18,6 +16,7 @@ warnings.filterwarnings("ignore")
 # Fixtures
 # ─────────────────────────────────────────────────────────────────────
 
+
 @pytest.fixture(scope="session")
 def config():
     with open("configs/config.yaml") as f:
@@ -29,37 +28,49 @@ def raw_df():
     """Minimal synthetic Telco churn dataset for tests."""
     np.random.seed(42)
     n = 300
-    return pd.DataFrame({
-        "customerID":        [f"C{i:04d}" for i in range(n)],
-        "gender":            np.random.choice(["Male", "Female"], n),
-        "SeniorCitizen":     np.random.randint(0, 2, n),
-        "Partner":           np.random.choice(["Yes", "No"], n),
-        "Dependents":        np.random.choice(["Yes", "No"], n),
-        "tenure":            np.random.randint(0, 72, n),
-        "PhoneService":      np.random.choice(["Yes", "No"], n),
-        "MultipleLines":     np.random.choice(["Yes", "No", "No phone service"], n),
-        "InternetService":   np.random.choice(["DSL", "Fiber optic", "No"], n),
-        "OnlineSecurity":    np.random.choice(["Yes", "No", "No internet service"], n),
-        "OnlineBackup":      np.random.choice(["Yes", "No", "No internet service"], n),
-        "DeviceProtection":  np.random.choice(["Yes", "No", "No internet service"], n),
-        "TechSupport":       np.random.choice(["Yes", "No", "No internet service"], n),
-        "StreamingTV":       np.random.choice(["Yes", "No", "No internet service"], n),
-        "StreamingMovies":   np.random.choice(["Yes", "No", "No internet service"], n),
-        "Contract":          np.random.choice(["Month-to-month", "One year", "Two year"], n),
-        "PaperlessBilling":  np.random.choice(["Yes", "No"], n),
-        "PaymentMethod":     np.random.choice([
-            "Electronic check", "Mailed check",
-            "Bank transfer (automatic)", "Credit card (automatic)"
-        ], n),
-        "MonthlyCharges":    np.round(np.random.uniform(20, 100, n), 2),
-        "TotalCharges":      np.round(np.random.uniform(20, 8000, n), 2),
-        "Churn":             np.random.choice(["Yes", "No"], n, p=[0.27, 0.73]),
-    })
+    return pd.DataFrame(
+        {
+            "customerID": [f"C{i:04d}" for i in range(n)],
+            "gender": np.random.choice(["Male", "Female"], n),
+            "SeniorCitizen": np.random.randint(0, 2, n),
+            "Partner": np.random.choice(["Yes", "No"], n),
+            "Dependents": np.random.choice(["Yes", "No"], n),
+            "tenure": np.random.randint(0, 72, n),
+            "PhoneService": np.random.choice(["Yes", "No"], n),
+            "MultipleLines": np.random.choice(["Yes", "No", "No phone service"], n),
+            "InternetService": np.random.choice(["DSL", "Fiber optic", "No"], n),
+            "OnlineSecurity": np.random.choice(["Yes", "No", "No internet service"], n),
+            "OnlineBackup": np.random.choice(["Yes", "No", "No internet service"], n),
+            "DeviceProtection": np.random.choice(
+                ["Yes", "No", "No internet service"], n
+            ),
+            "TechSupport": np.random.choice(["Yes", "No", "No internet service"], n),
+            "StreamingTV": np.random.choice(["Yes", "No", "No internet service"], n),
+            "StreamingMovies": np.random.choice(
+                ["Yes", "No", "No internet service"], n
+            ),
+            "Contract": np.random.choice(["Month-to-month", "One year", "Two year"], n),
+            "PaperlessBilling": np.random.choice(["Yes", "No"], n),
+            "PaymentMethod": np.random.choice(
+                [
+                    "Electronic check",
+                    "Mailed check",
+                    "Bank transfer (automatic)",
+                    "Credit card (automatic)",
+                ],
+                n,
+            ),
+            "MonthlyCharges": np.round(np.random.uniform(20, 100, n), 2),
+            "TotalCharges": np.round(np.random.uniform(20, 8000, n), 2),
+            "Churn": np.random.choice(["Yes", "No"], n, p=[0.27, 0.73]),
+        }
+    )
 
 
 @pytest.fixture(scope="session")
 def cleaned_df(raw_df, config):
     from src.data.ingest import DataIngester
+
     ingester = DataIngester(config)
     return ingester._initial_clean(raw_df.copy())
 
@@ -67,6 +78,7 @@ def cleaned_df(raw_df, config):
 @pytest.fixture(scope="session")
 def features_df(cleaned_df, config, tmp_path_factory):
     from src.features.engineer import FeatureEngineer
+
     artifact_dir = str(tmp_path_factory.mktemp("artifacts"))
     engineer = FeatureEngineer(config=config, artifact_dir=artifact_dir)
     return engineer.fit_transform(cleaned_df)
@@ -75,6 +87,7 @@ def features_df(cleaned_df, config, tmp_path_factory):
 # ─────────────────────────────────────────────────────────────────────
 # 1. Data Ingestion Tests
 # ─────────────────────────────────────────────────────────────────────
+
 
 class TestDataIngester:
 
@@ -92,6 +105,7 @@ class TestDataIngester:
 
     def test_all_expected_columns_present(self, cleaned_df):
         from src.data.ingest import DataIngester
+
         expected = set(DataIngester.EXPECTED_COLUMNS)
         assert expected.issubset(set(cleaned_df.columns))
 
@@ -110,6 +124,7 @@ class TestDataIngester:
 
     def test_missing_column_raises_error(self, config):
         from src.data.ingest import DataIngester
+
         ingester = DataIngester(config)
         bad_df = pd.DataFrame({"col1": [1, 2, 3]})
         with pytest.raises(ValueError, match="Missing expected columns"):
@@ -119,6 +134,7 @@ class TestDataIngester:
 # ─────────────────────────────────────────────────────────────────────
 # 2. Feature Engineering Tests
 # ─────────────────────────────────────────────────────────────────────
+
 
 class TestFeatureEngineer:
 
@@ -160,12 +176,13 @@ class TestFeatureEngineer:
 
     def test_transform_matches_fit_transform_shape(self, cleaned_df, config, tmp_path):
         from src.features.engineer import FeatureEngineer
+
         engineer = FeatureEngineer(config=config, artifact_dir=str(tmp_path))
         df_fit = engineer.fit_transform(cleaned_df.copy())
 
         # transform on fresh slice should match column count
         df_new = cleaned_df.iloc[:10].copy()
-        df_tf  = engineer.transform(df_new)
+        df_tf = engineer.transform(df_new)
         assert df_tf.shape[1] == df_fit.shape[1]
 
 
@@ -173,10 +190,12 @@ class TestFeatureEngineer:
 # 3. Model Metrics Computation Tests
 # ─────────────────────────────────────────────────────────────────────
 
+
 class TestMetricsComputation:
 
     def test_compute_metrics_perfect(self):
         from src.models.train import compute_metrics
+
         y = np.array([0, 0, 1, 1])
         m = compute_metrics(y, y, y.astype(float))
         assert m["accuracy"] == 1.0
@@ -184,7 +203,8 @@ class TestMetricsComputation:
 
     def test_compute_metrics_keys(self):
         from src.models.train import compute_metrics
-        y    = np.array([0, 1, 0, 1])
+
+        y = np.array([0, 1, 0, 1])
         pred = np.array([0, 1, 1, 0])
         prob = np.array([0.1, 0.9, 0.6, 0.4])
         m = compute_metrics(y, pred, prob)
@@ -192,8 +212,9 @@ class TestMetricsComputation:
 
     def test_all_metrics_between_0_and_1(self):
         from src.models.train import compute_metrics
+
         np.random.seed(0)
-        y    = np.random.randint(0, 2, 100)
+        y = np.random.randint(0, 2, 100)
         pred = np.random.randint(0, 2, 100)
         prob = np.random.uniform(0, 1, 100)
         m = compute_metrics(y, pred, prob)
@@ -204,6 +225,7 @@ class TestMetricsComputation:
 # ─────────────────────────────────────────────────────────────────────
 # 4. FastAPI Endpoint Tests
 # ─────────────────────────────────────────────────────────────────────
+
 
 class TestFastAPI:
     """
@@ -218,40 +240,53 @@ class TestFastAPI:
         mock_predictor = MagicMock()
         mock_predictor.predict.return_value = {
             "churn_probability": [0.75],
-            "churn_prediction":  [1],
-            "risk_label":        ["High"],
+            "churn_prediction": [1],
+            "risk_label": ["High"],
         }
 
         mock_engineer = MagicMock()
         mock_engineer.transform.side_effect = lambda df: df.assign(Churn=0)
 
         monkeypatch.setattr("src.api.main.ChurnPredictor", lambda c: mock_predictor)
-        monkeypatch.setattr("src.api.main.FeatureEngineer", lambda c, **kw: mock_engineer)
+        monkeypatch.setattr(
+            "src.api.main.FeatureEngineer", lambda c, **kw: mock_engineer
+        )
 
         import src.api.main as api_module
-        api_module.predictor  = mock_predictor
-        api_module.engineer   = mock_engineer
-        api_module.CONFIG     = config
+
+        api_module.predictor = mock_predictor
+        api_module.engineer = mock_engineer
+        api_module.CONFIG = config
 
     @pytest.fixture
     def client(self):
         from fastapi.testclient import TestClient
         from src.api.main import app
+
         return TestClient(app)
 
     @pytest.fixture
     def sample_payload(self):
         return {
-            "gender": "Male", "SeniorCitizen": 0,
-            "Partner": "Yes", "Dependents": "No",
-            "tenure": 12, "PhoneService": "Yes",
-            "MultipleLines": "No", "InternetService": "Fiber optic",
-            "OnlineSecurity": "No", "OnlineBackup": "No",
-            "DeviceProtection": "No", "TechSupport": "No",
-            "StreamingTV": "No", "StreamingMovies": "No",
-            "Contract": "Month-to-month", "PaperlessBilling": "Yes",
+            "gender": "Male",
+            "SeniorCitizen": 0,
+            "Partner": "Yes",
+            "Dependents": "No",
+            "tenure": 12,
+            "PhoneService": "Yes",
+            "MultipleLines": "No",
+            "InternetService": "Fiber optic",
+            "OnlineSecurity": "No",
+            "OnlineBackup": "No",
+            "DeviceProtection": "No",
+            "TechSupport": "No",
+            "StreamingTV": "No",
+            "StreamingMovies": "No",
+            "Contract": "Month-to-month",
+            "PaperlessBilling": "Yes",
             "PaymentMethod": "Electronic check",
-            "MonthlyCharges": 70.5, "TotalCharges": 846.0,
+            "MonthlyCharges": 70.5,
+            "TotalCharges": 846.0,
         }
 
     def test_health_endpoint(self, client):
@@ -267,9 +302,9 @@ class TestFastAPI:
         r = client.post("/predict", json=sample_payload)
         data = r.json()
         assert "churn_probability" in data
-        assert "churn_prediction"  in data
-        assert "risk_label"        in data
-        assert "request_id"        in data
+        assert "churn_prediction" in data
+        assert "risk_label" in data
+        assert "request_id" in data
 
     def test_predict_probability_range(self, client, sample_payload):
         r = client.post("/predict", json=sample_payload)
@@ -308,24 +343,29 @@ class TestFastAPI:
 # 5. Risk Label Tests
 # ─────────────────────────────────────────────────────────────────────
 
+
 class TestRiskLabels:
 
     def test_critical_label(self):
         from src.models.predict import ChurnPredictor
+
         labels = ChurnPredictor._risk_labels(np.array([0.80, 0.76]))
         assert all(l == "Critical" for l in labels)
 
     def test_high_label(self):
         from src.models.predict import ChurnPredictor
+
         labels = ChurnPredictor._risk_labels(np.array([0.60, 0.51]))
         assert all(l == "High" for l in labels)
 
     def test_medium_label(self):
         from src.models.predict import ChurnPredictor
+
         labels = ChurnPredictor._risk_labels(np.array([0.40, 0.31]))
         assert all(l == "Medium" for l in labels)
 
     def test_low_label(self):
         from src.models.predict import ChurnPredictor
+
         labels = ChurnPredictor._risk_labels(np.array([0.10, 0.29]))
         assert all(l == "Low" for l in labels)

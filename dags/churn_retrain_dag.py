@@ -1,5 +1,3 @@
-
-
 from __future__ import annotations
 
 import os
@@ -26,20 +24,21 @@ with open(CONFIG_PATH) as f:
     CONFIG = yaml.safe_load(f)
 
 default_args = {
-    "owner":            "mlops-team",
-    "depends_on_past":  False,
-    "start_date":       days_ago(1),
-    "retries":          1,
-    "retry_delay":      timedelta(minutes=5),
+    "owner": "mlops-team",
+    "depends_on_past": False,
+    "start_date": days_ago(1),
+    "retries": 1,
+    "retry_delay": timedelta(minutes=5),
 }
 
 ACCURACY_THRESHOLD = CONFIG["monitoring"]["accuracy_threshold"]
-F1_THRESHOLD       = CONFIG["monitoring"]["f1_threshold"]
+F1_THRESHOLD = CONFIG["monitoring"]["f1_threshold"]
 
 
 # ─────────────────────────────────────────────────────────────────────
 # Task functions
 # ─────────────────────────────────────────────────────────────────────
+
 
 def task_evaluate_current(**ctx):
     """
@@ -50,22 +49,22 @@ def task_evaluate_current(**ctx):
 
     # Load latest production model
     model_name = CONFIG["mlflow"]["model_name"]
-    model_uri  = f"models:/{model_name}/Production"
+    model_uri = f"models:/{model_name}/Production"
 
     try:
         model = mlflow.pyfunc.load_model(model_uri)
     except Exception as e:
         logger.error(f"Could not load Production model: {e}")
         # No production model → force retraining
-        ctx["ti"].xcom_push(key="current_f1",       value=0.0)
+        ctx["ti"].xcom_push(key="current_f1", value=0.0)
         ctx["ti"].xcom_push(key="current_accuracy", value=0.0)
         return
 
     # Score on latest feature set
     feat_path = CONFIG["paths"]["features_data"]
-    df        = pd.read_parquet(feat_path)
-    X         = df.drop(columns=[CONFIG["data"]["target_column"]])
-    y         = df[CONFIG["data"]["target_column"]].astype(int)
+    df = pd.read_parquet(feat_path)
+    X = df.drop(columns=[CONFIG["data"]["target_column"]])
+    y = df[CONFIG["data"]["target_column"]].astype(int)
 
     # Use last 20% as fresh "production" slice
     split = int(len(df) * 0.8)
@@ -77,19 +76,19 @@ def task_evaluate_current(**ctx):
     else:
         y_pred = (y_pred >= 0.5).astype(int)
 
-    current_f1  = round(f1_score(y_new, y_pred), 4)
+    current_f1 = round(f1_score(y_new, y_pred), 4)
     current_acc = round(accuracy_score(y_new, y_pred), 4)
 
     logger.info(f"Current model — F1={current_f1}  Accuracy={current_acc}")
 
-    ctx["ti"].xcom_push(key="current_f1",       value=current_f1)
+    ctx["ti"].xcom_push(key="current_f1", value=current_f1)
     ctx["ti"].xcom_push(key="current_accuracy", value=current_acc)
 
     # Log to MLflow for tracking
     with mlflow.start_run(run_name="weekly_perf_check"):
-        mlflow.log_metric("weekly_f1",       current_f1)
+        mlflow.log_metric("weekly_f1", current_f1)
         mlflow.log_metric("weekly_accuracy", current_acc)
-        mlflow.log_metric("f1_threshold",    F1_THRESHOLD)
+        mlflow.log_metric("f1_threshold", F1_THRESHOLD)
 
 
 def task_branch(**ctx):
@@ -113,18 +112,18 @@ def task_retrain(**ctx):
     from src.models.train import ModelTrainer
 
     feat_path = CONFIG["paths"]["features_data"]
-    trainer   = ModelTrainer(CONFIG)
-    results   = trainer.run(feat_path)
+    trainer = ModelTrainer(CONFIG)
+    results = trainer.run(feat_path)
 
-    best_name    = max(results, key=lambda k: results[k]["metrics"]["f1"])
+    best_name = max(results, key=lambda k: results[k]["metrics"]["f1"])
     best_metrics = results[best_name]["metrics"]
-    best_run_id  = results[best_name]["run_id"]
+    best_run_id = results[best_name]["run_id"]
 
     logger.success(f"Retrain complete. Best: {best_name} F1={best_metrics['f1']}")
 
-    ctx["ti"].xcom_push(key="retrain_f1",       value=best_metrics["f1"])
-    ctx["ti"].xcom_push(key="retrain_run_id",   value=best_run_id)
-    ctx["ti"].xcom_push(key="retrain_model",    value=best_name)
+    ctx["ti"].xcom_push(key="retrain_f1", value=best_metrics["f1"])
+    ctx["ti"].xcom_push(key="retrain_run_id", value=best_run_id)
+    ctx["ti"].xcom_push(key="retrain_model", value=best_name)
 
 
 def task_promote(**ctx):
@@ -132,8 +131,8 @@ def task_promote(**ctx):
     Promote new Staging model to Production IF it's better than current.
     Archive the old Production model.
     """
-    retrain_f1  = ctx["ti"].xcom_pull(key="retrain_f1")
-    current_f1  = ctx["ti"].xcom_pull(key="current_f1")
+    retrain_f1 = ctx["ti"].xcom_pull(key="retrain_f1")
+    current_f1 = ctx["ti"].xcom_pull(key="current_f1")
 
     if retrain_f1 <= current_f1:
         logger.info(
@@ -141,7 +140,7 @@ def task_promote(**ctx):
         )
         return
 
-    client     = mlflow.tracking.MlflowClient()
+    client = mlflow.tracking.MlflowClient()
     model_name = CONFIG["mlflow"]["model_name"]
 
     # Archive existing Production
@@ -159,7 +158,9 @@ def task_promote(**ctx):
         client.transition_model_version_stage(
             name=model_name, version=new_v.version, stage="Production"
         )
-        logger.success(f"Promoted v{new_v.version} → Production (F1 {current_f1} → {retrain_f1})")
+        logger.success(
+            f"Promoted v{new_v.version} → Production (F1 {current_f1} → {retrain_f1})"
+        )
 
         # Add descriptive alias
         client.update_model_version(
@@ -173,10 +174,10 @@ def task_promote(**ctx):
 
 
 def task_notify_retrain(**ctx):
-    retrain_f1  = ctx["ti"].xcom_pull(key="retrain_f1")
-    current_f1  = ctx["ti"].xcom_pull(key="current_f1") or "N/A"
-    model_name  = ctx["ti"].xcom_pull(key="retrain_model")
-    run_date    = ctx["ds"]
+    retrain_f1 = ctx["ti"].xcom_pull(key="retrain_f1")
+    current_f1 = ctx["ti"].xcom_pull(key="current_f1") or "N/A"
+    model_name = ctx["ti"].xcom_pull(key="retrain_model")
+    run_date = ctx["ds"]
 
     msg = (
         f"🔄 Churn Model RETRAINED & PROMOTED [{run_date}]\n"
@@ -194,52 +195,52 @@ def task_notify_retrain(**ctx):
 # ─────────────────────────────────────────────────────────────────────
 
 with DAG(
-    dag_id            = "churn_auto_retrain",
-    default_args      = default_args,
-    description       = "Automated weekly model evaluation and conditional retraining",
-    schedule_interval = CONFIG["airflow"]["retraining_schedule"],  # "0 4 * * 1"
-    catchup           = False,
-    tags              = ["churn", "retraining", "mlops"],
-    doc_md            = __doc__,
+    dag_id="churn_auto_retrain",
+    default_args=default_args,
+    description="Automated weekly model evaluation and conditional retraining",
+    schedule_interval=CONFIG["airflow"]["retraining_schedule"],  # "0 4 * * 1"
+    catchup=False,
+    tags=["churn", "retraining", "mlops"],
+    doc_md=__doc__,
 ) as dag:
 
     start = EmptyOperator(task_id="start")
 
     evaluate = PythonOperator(
-        task_id         = "evaluate_current_model",
-        python_callable = task_evaluate_current,
-        provide_context = True,
+        task_id="evaluate_current_model",
+        python_callable=task_evaluate_current,
+        provide_context=True,
     )
 
     branch = BranchPythonOperator(
-        task_id         = "check_performance",
-        python_callable = task_branch,
-        provide_context = True,
+        task_id="check_performance",
+        python_callable=task_branch,
+        provide_context=True,
     )
 
     skip = EmptyOperator(task_id="skip_retrain")
 
     retrain = PythonOperator(
-        task_id         = "retrain_model",
-        python_callable = task_retrain,
-        provide_context = True,
+        task_id="retrain_model",
+        python_callable=task_retrain,
+        provide_context=True,
     )
 
     promote = PythonOperator(
-        task_id         = "promote_new_model",
-        python_callable = task_promote,
-        provide_context = True,
+        task_id="promote_new_model",
+        python_callable=task_promote,
+        provide_context=True,
     )
 
     notify = PythonOperator(
-        task_id         = "notify_retrain",
-        python_callable = task_notify_retrain,
-        provide_context = True,
+        task_id="notify_retrain",
+        python_callable=task_notify_retrain,
+        provide_context=True,
     )
 
     end = EmptyOperator(
-        task_id      = "end",
-        trigger_rule = TriggerRule.ONE_SUCCESS,
+        task_id="end",
+        trigger_rule=TriggerRule.ONE_SUCCESS,
     )
 
     # ── DAG wiring ────────────────────────────────────────────────

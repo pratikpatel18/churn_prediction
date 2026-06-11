@@ -23,7 +23,7 @@ from great_expectations.checkpoint import SimpleCheckpoint
 class DataValidator:
     """
     Wraps Great Expectations to validate DataFrames in-pipeline.
-    
+
     Usage:
         validator = DataValidator()
         result = validator.validate_raw(df)
@@ -67,11 +67,27 @@ class DataValidator:
         # ── Schema checks ──────────────────────────────────────────
         validator.expect_table_columns_to_match_ordered_list(
             column_list=[
-                "customerID", "gender", "SeniorCitizen", "Partner", "Dependents",
-                "tenure", "PhoneService", "MultipleLines", "InternetService",
-                "OnlineSecurity", "OnlineBackup", "DeviceProtection", "TechSupport",
-                "StreamingTV", "StreamingMovies", "Contract", "PaperlessBilling",
-                "PaymentMethod", "MonthlyCharges", "TotalCharges", "Churn",
+                "customerID",
+                "gender",
+                "SeniorCitizen",
+                "Partner",
+                "Dependents",
+                "tenure",
+                "PhoneService",
+                "MultipleLines",
+                "InternetService",
+                "OnlineSecurity",
+                "OnlineBackup",
+                "DeviceProtection",
+                "TechSupport",
+                "StreamingTV",
+                "StreamingMovies",
+                "Contract",
+                "PaperlessBilling",
+                "PaymentMethod",
+                "MonthlyCharges",
+                "TotalCharges",
+                "Churn",
             ]
         )
         validator.expect_table_row_count_to_be_between(min_value=100, max_value=100_000)
@@ -81,23 +97,37 @@ class DataValidator:
             validator.expect_column_values_to_not_be_null(col)
 
         # ── Value range checks ─────────────────────────────────────
-        validator.expect_column_values_to_be_between("tenure", min_value=0, max_value=72)
-        validator.expect_column_values_to_be_between("MonthlyCharges", min_value=0, max_value=200)
-        validator.expect_column_values_to_be_between("TotalCharges", min_value=0, max_value=10_000)
-        validator.expect_column_values_to_be_between("SeniorCitizen", min_value=0, max_value=1)
+        validator.expect_column_values_to_be_between(
+            "tenure", min_value=0, max_value=72
+        )
+        validator.expect_column_values_to_be_between(
+            "MonthlyCharges", min_value=0, max_value=200
+        )
+        validator.expect_column_values_to_be_between(
+            "TotalCharges", min_value=0, max_value=10_000
+        )
+        validator.expect_column_values_to_be_between(
+            "SeniorCitizen", min_value=0, max_value=1
+        )
 
         # ── Cardinality / set checks ───────────────────────────────
         validator.expect_column_values_to_be_in_set("gender", ["Male", "Female"])
         validator.expect_column_values_to_be_in_set("Churn", [0, 1])
-        validator.expect_column_values_to_be_in_set("Contract", ["Month-to-month", "One year", "Two year"])
-        validator.expect_column_values_to_be_in_set("InternetService", ["DSL", "Fiber optic", "No"])
+        validator.expect_column_values_to_be_in_set(
+            "Contract", ["Month-to-month", "One year", "Two year"]
+        )
+        validator.expect_column_values_to_be_in_set(
+            "InternetService", ["DSL", "Fiber optic", "No"]
+        )
 
         # ── Uniqueness ─────────────────────────────────────────────
         validator.expect_column_values_to_be_unique("customerID")
 
         # ── Statistical checks ─────────────────────────────────────
         # Churn rate should be between 5%–50% (sanity check)
-        validator.expect_column_mean_to_be_between("Churn", min_value=0.05, max_value=0.50)
+        validator.expect_column_mean_to_be_between(
+            "Churn", min_value=0.05, max_value=0.50
+        )
 
         validator.save_expectation_suite(discard_failed_expectations=False)
         logger.success(f"Expectation suite '{suite_name}' saved.")
@@ -126,8 +156,10 @@ class DataValidator:
             logger.error(f"Validation FAILED: {n_failed}/{n_total} expectations failed")
             for r in results["results"]:
                 if not r["success"]:
-                    logger.error(f"  ✗ {r['expectation_config']['expectation_type']} — "
-                                 f"{r['expectation_config']['kwargs']}")
+                    logger.error(
+                        f"  ✗ {r['expectation_config']['expectation_type']} — "
+                        f"{r['expectation_config']['kwargs']}"
+                    )
 
         return {
             "success": success,
@@ -159,6 +191,7 @@ class DataValidator:
 # ──────────────────────────────────────────────────────────────────────
 # Standalone validation utility (for quick checks in Airflow tasks)
 # ──────────────────────────────────────────────────────────────────────
+
 
 def validate_dataframe(df: pd.DataFrame, suite: str = "raw_data_suite") -> bool:
     """
