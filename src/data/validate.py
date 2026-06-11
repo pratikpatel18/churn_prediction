@@ -12,12 +12,12 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
+from great_expectations.checkpoint import SimpleCheckpoint
+from great_expectations.core.batch import RuntimeBatchRequest
 from loguru import logger
 
 # Great Expectations
 import great_expectations as gx
-from great_expectations.core.batch import RuntimeBatchRequest
-from great_expectations.checkpoint import SimpleCheckpoint
 
 
 class DataValidator:

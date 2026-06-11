@@ -1,12 +1,17 @@
-import os, time, uuid, yaml, joblib
+import os
+import time
+import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime
+
+import joblib
+import mlflow
 import pandas as pd
+import yaml
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, validator
 from loguru import logger
-import mlflow
+from pydantic import BaseModel, Field, validator
 
 from src.features.engineer import FeatureEngineer
 from src.models.predict import ChurnPredictor

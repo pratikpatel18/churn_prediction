@@ -6,40 +6,33 @@ hyperparameter search. Every run is tracked in MLflow.
 Best model is registered in the MLflow Model Registry.
 """
 
-import os
 import json
+import os
 import warnings
 from pathlib import Path
 from typing import Any
 
-import numpy as np
-import pandas as pd
+import joblib
+import lightgbm as lgb
 import mlflow
+import mlflow.lightgbm
 import mlflow.sklearn
 import mlflow.xgboost
-import mlflow.lightgbm
+import numpy as np
 import optuna
-from optuna.samplers import TPESampler
-import joblib
-from loguru import logger
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
-from sklearn.metrics import (
-    accuracy_score,
-    f1_score,
-    precision_score,
-    recall_score,
-    roc_auc_score,
-    classification_report,
-    confusion_matrix,
-    matthews_corrcoef,
-    log_loss,
-    average_precision_score,
-)
-from sklearn.metrics import precision_recall_curve
-from imblearn.over_sampling import SMOTE
+import pandas as pd
 import xgboost as xgb
-import lightgbm as lgb
+from imblearn.over_sampling import SMOTE
+from loguru import logger
+from optuna.samplers import TPESampler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (accuracy_score, average_precision_score,
+                             classification_report, confusion_matrix, f1_score,
+                             log_loss, matthews_corrcoef,
+                             precision_recall_curve, precision_score,
+                             recall_score, roc_auc_score)
+from sklearn.model_selection import (StratifiedKFold, cross_val_score,
+                                     train_test_split)
 
 warnings.filterwarnings("ignore")
 optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -385,8 +378,8 @@ class ModelTrainer:
 
             # ── SHAP feature importance ────────────────────────────────
             try:
-                import shap
                 import matplotlib.pyplot as plt
+                import shap
 
                 if model_name in ["lightgbm", "xgboost"]:
                     explainer = shap.TreeExplainer(final_model)

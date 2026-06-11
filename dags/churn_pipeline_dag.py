@@ -6,17 +6,17 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import BranchPythonOperator, PythonOperator
 from airflow.utils.dates import days_ago
 from airflow.utils.trigger_rule import TriggerRule
 
 # Ensure project root is on PYTHONPATH inside Airflow workers
 sys.path.insert(0, str(Path(__file__).parents[1]))
 
-import yaml
 import pandas as pd
+import yaml
 from loguru import logger
 
 # ─────────────────────────────────────────────────────────────────────

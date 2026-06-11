@@ -4,29 +4,17 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
-from loguru import logger
-
 from evidently import ColumnMapping
+from evidently.metric_preset import (ClassificationPreset, DataDriftPreset,
+                                     DataQualityPreset, TargetDriftPreset)
+from evidently.metrics import (ClassificationQualityMetric, ColumnDriftMetric,
+                               DataDriftTable, DatasetDriftMetric)
 from evidently.report import Report
-from evidently.metric_preset import (
-    DataDriftPreset,
-    DataQualityPreset,
-    ClassificationPreset,
-    TargetDriftPreset,
-)
-from evidently.metrics import (
-    DataDriftTable,
-    DatasetDriftMetric,
-    ColumnDriftMetric,
-    ClassificationQualityMetric,
-)
-from evidently.test_suite import TestSuite
 from evidently.test_preset import DataDriftTestPreset, DataQualityTestPreset
-from evidently.tests import (
-    TestNumberOfDriftedColumns,
-    TestShareOfDriftedColumns,
-    TestColumnDrift,
-)
+from evidently.test_suite import TestSuite
+from evidently.tests import (TestColumnDrift, TestNumberOfDriftedColumns,
+                             TestShareOfDriftedColumns)
+from loguru import logger
 
 
 class DriftMonitor:

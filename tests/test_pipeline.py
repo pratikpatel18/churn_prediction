@@ -261,6 +261,7 @@ class TestFastAPI:
     @pytest.fixture
     def client(self):
         from fastapi.testclient import TestClient
+
         from src.api.main import app
 
         return TestClient(app)
