@@ -5,15 +5,22 @@ from typing import Optional
 
 import pandas as pd
 from evidently import ColumnMapping
-from evidently.metric_preset import (ClassificationPreset, DataDriftPreset,
-                                     DataQualityPreset, TargetDriftPreset)
-from evidently.metrics import (ClassificationQualityMetric, ColumnDriftMetric,
-                               DataDriftTable, DatasetDriftMetric)
+from evidently.metric_preset import (
+    ClassificationPreset,
+    DataDriftPreset,
+    DataQualityPreset,
+    TargetDriftPreset,
+)
+from evidently.metrics import (
+    ClassificationQualityMetric,
+    ColumnDriftMetric,
+    DataDriftTable,
+    DatasetDriftMetric,
+)
 from evidently.report import Report
 from evidently.test_preset import DataDriftTestPreset, DataQualityTestPreset
 from evidently.test_suite import TestSuite
-from evidently.tests import (TestColumnDrift, TestNumberOfDriftedColumns,
-                             TestShareOfDriftedColumns)
+from evidently.tests import TestColumnDrift, TestNumberOfDriftedColumns, TestShareOfDriftedColumns
 from loguru import logger
 
 
@@ -204,11 +211,7 @@ class DriftMonitor:
         try:
             metrics = drift_dict.get("metrics", [])
             drift_metric = next(
-                (
-                    m
-                    for m in metrics
-                    if "DatasetDriftMetric" in str(m.get("metric", ""))
-                ),
+                (m for m in metrics if "DatasetDriftMetric" in str(m.get("metric", ""))),
                 {},
             )
             result = drift_metric.get("result", {})
@@ -227,11 +230,7 @@ class DriftMonitor:
         try:
             metrics = perf_dict.get("metrics", [])
             qual_metric = next(
-                (
-                    m
-                    for m in metrics
-                    if "ClassificationQualityMetric" in str(m.get("metric", ""))
-                ),
+                (m for m in metrics if "ClassificationQualityMetric" in str(m.get("metric", ""))),
                 {},
             )
             current = qual_metric.get("result", {}).get("current", {})

@@ -152,9 +152,7 @@ if page == "📊 Overview":
     # Derive metrics from available data
     if features_df is not None:
         target = config["data"]["target_column"]
-        churn_rate = (
-            features_df[target].mean() if target in features_df.columns else None
-        )
+        churn_rate = features_df[target].mean() if target in features_df.columns else None
         n_customers = len(features_df)
     else:
         churn_rate, n_customers = None, None
@@ -200,9 +198,7 @@ if page == "📊 Overview":
         st.subheader("📦 Feature Distributions")
         num_cols = features_df.select_dtypes(include="number").columns.tolist()
         key_cols = [
-            c
-            for c in ["tenure", "MonthlyCharges", "TotalCharges", "risk_score"]
-            if c in num_cols
+            c for c in ["tenure", "MonthlyCharges", "TotalCharges", "risk_score"] if c in num_cols
         ][:4]
 
         if key_cols:
@@ -218,9 +214,7 @@ if page == "📊 Overview":
                     row=1,
                     col=i,
                 )
-            fig.update_layout(
-                height=300, showlegend=False, plot_bgcolor="rgba(0,0,0,0)"
-            )
+            fig.update_layout(height=300, showlegend=False, plot_bgcolor="rgba(0,0,0,0)")
             st.plotly_chart(fig, use_container_width=True)
 
         # Churn by contract type
@@ -249,9 +243,7 @@ if page == "📊 Overview":
 
 elif page == "🔍 Data Drift":
     st.title("🔍 Data Drift Detection — Evidently AI")
-    st.markdown(
-        "Comparing **reference** (training) data vs **current** production data."
-    )
+    st.markdown("Comparing **reference** (training) data vs **current** production data.")
     st.markdown("---")
 
     if drift_report is None:
@@ -293,9 +285,7 @@ elif page == "🔍 Data Drift":
                 test_df = pd.DataFrame(details)
                 st.dataframe(
                     test_df.style.applymap(
-                        lambda v: (
-                            "color: #22c55e" if v == "SUCCESS" else "color: #ef4444"
-                        ),
+                        lambda v: ("color: #22c55e" if v == "SUCCESS" else "color: #ef4444"),
                         subset=["status"],
                     ),
                     use_container_width=True,
@@ -357,9 +347,7 @@ elif page == "🔍 Data Drift":
         html_reports = list(Path(config["paths"]["reports"]).glob("drift_*.html"))
         if html_reports:
             latest = sorted(html_reports)[-1]
-            st.info(
-                f"📄 Full HTML report: `{latest}` — open in browser for interactive view"
-            )
+            st.info(f"📄 Full HTML report: `{latest}` — open in browser for interactive view")
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -368,9 +356,7 @@ elif page == "🔍 Data Drift":
 
 elif page == "🏆 Experiments":
     st.title("🏆 MLflow Experiment Tracker")
-    st.markdown(
-        "Compare all training runs across models, metrics, and hyperparameters."
-    )
+    st.markdown("Compare all training runs across models, metrics, and hyperparameters.")
     st.markdown("---")
 
     if mlflow_runs is None or mlflow_runs.empty:
@@ -406,10 +392,7 @@ elif page == "🏆 Experiments":
         st.markdown("---")
 
         # Metric comparison chart
-        if (
-            "metrics.f1" in mlflow_runs.columns
-            and "tags.model_type" in mlflow_runs.columns
-        ):
+        if "metrics.f1" in mlflow_runs.columns and "tags.model_type" in mlflow_runs.columns:
             st.subheader("📊 Model Comparison")
             metric_choice = st.selectbox(
                 "Metric",
@@ -435,11 +418,7 @@ elif page == "🏆 Experiments":
                     mlflow_runs,
                     x="metrics.f1",
                     y="metrics.roc_auc",
-                    color=(
-                        "tags.model_type"
-                        if "tags.model_type" in mlflow_runs.columns
-                        else None
-                    ),
+                    color=("tags.model_type" if "tags.model_type" in mlflow_runs.columns else None),
                     size_max=15,
                     hover_data=["run_id"],
                     title="F1 vs ROC-AUC (all runs)",
@@ -454,9 +433,7 @@ elif page == "🏆 Experiments":
 
 elif page == "🔮 Live Predict":
     st.title("🔮 Live Churn Prediction")
-    st.markdown(
-        "Enter customer details to get a real-time churn prediction via the API."
-    )
+    st.markdown("Enter customer details to get a real-time churn prediction via the API.")
     st.markdown("---")
 
     api_url = os.getenv("API_BASE_URL", f"http://localhost:{config['api']['port']}")
@@ -471,33 +448,17 @@ elif page == "🔮 Live Predict":
         dependents = st.selectbox("Dependents", ["Yes", "No"])
         tenure = st.slider("Tenure (months)", 0, 72, 12)
         phone_service = st.selectbox("Phone Service", ["Yes", "No"])
-        multiple_lines = st.selectbox(
-            "Multiple Lines", ["Yes", "No", "No phone service"]
-        )
+        multiple_lines = st.selectbox("Multiple Lines", ["Yes", "No", "No phone service"])
 
     with col2:
         st.subheader("🌐 Services")
-        internet_service = st.selectbox(
-            "Internet Service", ["DSL", "Fiber optic", "No"]
-        )
-        online_security = st.selectbox(
-            "Online Security", ["Yes", "No", "No internet service"]
-        )
-        online_backup = st.selectbox(
-            "Online Backup", ["Yes", "No", "No internet service"]
-        )
-        device_protection = st.selectbox(
-            "Device Protection", ["Yes", "No", "No internet service"]
-        )
-        tech_support = st.selectbox(
-            "Tech Support", ["Yes", "No", "No internet service"]
-        )
-        streaming_tv = st.selectbox(
-            "Streaming TV", ["Yes", "No", "No internet service"]
-        )
-        streaming_movies = st.selectbox(
-            "Streaming Movies", ["Yes", "No", "No internet service"]
-        )
+        internet_service = st.selectbox("Internet Service", ["DSL", "Fiber optic", "No"])
+        online_security = st.selectbox("Online Security", ["Yes", "No", "No internet service"])
+        online_backup = st.selectbox("Online Backup", ["Yes", "No", "No internet service"])
+        device_protection = st.selectbox("Device Protection", ["Yes", "No", "No internet service"])
+        tech_support = st.selectbox("Tech Support", ["Yes", "No", "No internet service"])
+        streaming_tv = st.selectbox("Streaming TV", ["Yes", "No", "No internet service"])
+        streaming_movies = st.selectbox("Streaming Movies", ["Yes", "No", "No internet service"])
 
     with col3:
         st.subheader("💳 Billing")
@@ -556,9 +517,7 @@ elif page == "🔮 Live Predict":
 
                 c1, c2, c3 = st.columns(3)
                 c1.metric("Churn Probability", f"{prob:.1%}")
-                c2.metric(
-                    "Prediction", "Will Churn 🔴" if pred == 1 else "Will Stay 🟢"
-                )
+                c2.metric("Prediction", "Will Churn 🔴" if pred == 1 else "Will Stay 🟢")
                 c3.metric("Risk Level", risk)
 
                 # Gauge chart
@@ -590,9 +549,5 @@ elif page == "🔮 Live Predict":
                 st.error(f"API error {resp.status_code}: {resp.text}")
 
         except Exception as e:
-            st.error(
-                f"Could not reach API at {api_url}. Is the FastAPI server running?\n\n`{e}`"
-            )
-            st.code(
-                f"uvicorn src.api.main:app --host 0.0.0.0 --port {config['api']['port']}"
-            )
+            st.error(f"Could not reach API at {api_url}. Is the FastAPI server running?\n\n`{e}`")
+            st.code(f"uvicorn src.api.main:app --host 0.0.0.0 --port {config['api']['port']}")

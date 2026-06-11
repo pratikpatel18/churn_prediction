@@ -21,9 +21,7 @@ class ChurnPredictor:
         self._load_model()
 
     def _load_model(self, stage: str = "Production") -> None:
-        tracking_uri = os.getenv(
-            "MLFLOW_TRACKING_URI", self.config["mlflow"]["tracking_uri"]
-        )
+        tracking_uri = os.getenv("MLFLOW_TRACKING_URI", self.config["mlflow"]["tracking_uri"])
         mlflow.set_tracking_uri(tracking_uri)
 
         model_uri = f"models:/{self.model_name}/{stage}"

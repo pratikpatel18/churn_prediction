@@ -41,14 +41,10 @@ def raw_df():
             "InternetService": np.random.choice(["DSL", "Fiber optic", "No"], n),
             "OnlineSecurity": np.random.choice(["Yes", "No", "No internet service"], n),
             "OnlineBackup": np.random.choice(["Yes", "No", "No internet service"], n),
-            "DeviceProtection": np.random.choice(
-                ["Yes", "No", "No internet service"], n
-            ),
+            "DeviceProtection": np.random.choice(["Yes", "No", "No internet service"], n),
             "TechSupport": np.random.choice(["Yes", "No", "No internet service"], n),
             "StreamingTV": np.random.choice(["Yes", "No", "No internet service"], n),
-            "StreamingMovies": np.random.choice(
-                ["Yes", "No", "No internet service"], n
-            ),
+            "StreamingMovies": np.random.choice(["Yes", "No", "No internet service"], n),
             "Contract": np.random.choice(["Month-to-month", "One year", "Two year"], n),
             "PaperlessBilling": np.random.choice(["Yes", "No"], n),
             "PaymentMethod": np.random.choice(
@@ -248,9 +244,7 @@ class TestFastAPI:
         mock_engineer.transform.side_effect = lambda df: df.assign(Churn=0)
 
         monkeypatch.setattr("src.api.main.ChurnPredictor", lambda c: mock_predictor)
-        monkeypatch.setattr(
-            "src.api.main.FeatureEngineer", lambda c, **kw: mock_engineer
-        )
+        monkeypatch.setattr("src.api.main.FeatureEngineer", lambda c, **kw: mock_engineer)
 
         import src.api.main as api_module
 

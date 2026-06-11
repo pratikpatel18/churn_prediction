@@ -96,14 +96,10 @@ def task_branch(**ctx):
     current_f1 = ctx["ti"].xcom_pull(key="current_f1")
 
     if current_f1 < F1_THRESHOLD:
-        logger.warning(
-            f"F1={current_f1} < threshold={F1_THRESHOLD} → triggering retraining"
-        )
+        logger.warning(f"F1={current_f1} < threshold={F1_THRESHOLD} → triggering retraining")
         return "retrain_model"
     else:
-        logger.info(
-            f"F1={current_f1} ≥ threshold={F1_THRESHOLD} → model OK, skipping retrain"
-        )
+        logger.info(f"F1={current_f1} ≥ threshold={F1_THRESHOLD} → model OK, skipping retrain")
         return "skip_retrain"
 
 
@@ -135,9 +131,7 @@ def task_promote(**ctx):
     current_f1 = ctx["ti"].xcom_pull(key="current_f1")
 
     if retrain_f1 <= current_f1:
-        logger.info(
-            f"New model F1={retrain_f1} ≤ current F1={current_f1}. Not promoting."
-        )
+        logger.info(f"New model F1={retrain_f1} ≤ current F1={current_f1}. Not promoting.")
         return
 
     client = mlflow.tracking.MlflowClient()
@@ -146,9 +140,7 @@ def task_promote(**ctx):
     # Archive existing Production
     prod_versions = client.get_latest_versions(model_name, stages=["Production"])
     for v in prod_versions:
-        client.transition_model_version_stage(
-            name=model_name, version=v.version, stage="Archived"
-        )
+        client.transition_model_version_stage(name=model_name, version=v.version, stage="Archived")
         logger.info(f"Archived v{v.version}")
 
     # Promote Staging → Production
@@ -158,9 +150,7 @@ def task_promote(**ctx):
         client.transition_model_version_stage(
             name=model_name, version=new_v.version, stage="Production"
         )
-        logger.success(
-            f"Promoted v{new_v.version} → Production (F1 {current_f1} → {retrain_f1})"
-        )
+        logger.success(f"Promoted v{new_v.version} → Production (F1 {current_f1} → {retrain_f1})")
 
         # Add descriptive alias
         client.update_model_version(

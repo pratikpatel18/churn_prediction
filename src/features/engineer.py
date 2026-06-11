@@ -74,9 +74,7 @@ class FeatureEngineer:
             df["TotalCharges"] > 0, df["MonthlyCharges"] / df["TotalCharges"], 0.0
         )
         service_df = df[self.SERVICES_COLS].replace(self.BINARY_MAP)
-        df["services_count"] = service_df.apply(pd.to_numeric, errors="coerce").sum(
-            axis=1
-        )
+        df["services_count"] = service_df.apply(pd.to_numeric, errors="coerce").sum(axis=1)
         df["has_internet"] = (df["InternetService"] != "No").astype(int)
         df["high_risk_contract"] = (df["Contract"] == "Month-to-month").astype(int)
         df["fiber_optic"] = (df["InternetService"] == "Fiber optic").astype(int)

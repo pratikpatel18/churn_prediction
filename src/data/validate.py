@@ -97,18 +97,10 @@ class DataValidator:
             validator.expect_column_values_to_not_be_null(col)
 
         # ── Value range checks ─────────────────────────────────────
-        validator.expect_column_values_to_be_between(
-            "tenure", min_value=0, max_value=72
-        )
-        validator.expect_column_values_to_be_between(
-            "MonthlyCharges", min_value=0, max_value=200
-        )
-        validator.expect_column_values_to_be_between(
-            "TotalCharges", min_value=0, max_value=10_000
-        )
-        validator.expect_column_values_to_be_between(
-            "SeniorCitizen", min_value=0, max_value=1
-        )
+        validator.expect_column_values_to_be_between("tenure", min_value=0, max_value=72)
+        validator.expect_column_values_to_be_between("MonthlyCharges", min_value=0, max_value=200)
+        validator.expect_column_values_to_be_between("TotalCharges", min_value=0, max_value=10_000)
+        validator.expect_column_values_to_be_between("SeniorCitizen", min_value=0, max_value=1)
 
         # ── Cardinality / set checks ───────────────────────────────
         validator.expect_column_values_to_be_in_set("gender", ["Male", "Female"])
@@ -116,18 +108,14 @@ class DataValidator:
         validator.expect_column_values_to_be_in_set(
             "Contract", ["Month-to-month", "One year", "Two year"]
         )
-        validator.expect_column_values_to_be_in_set(
-            "InternetService", ["DSL", "Fiber optic", "No"]
-        )
+        validator.expect_column_values_to_be_in_set("InternetService", ["DSL", "Fiber optic", "No"])
 
         # ── Uniqueness ─────────────────────────────────────────────
         validator.expect_column_values_to_be_unique("customerID")
 
         # ── Statistical checks ─────────────────────────────────────
         # Churn rate should be between 5%–50% (sanity check)
-        validator.expect_column_mean_to_be_between(
-            "Churn", min_value=0.05, max_value=0.50
-        )
+        validator.expect_column_mean_to_be_between("Churn", min_value=0.05, max_value=0.50)
 
         validator.save_expectation_suite(discard_failed_expectations=False)
         logger.success(f"Expectation suite '{suite_name}' saved.")

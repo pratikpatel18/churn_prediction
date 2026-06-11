@@ -14,12 +14,8 @@ os.environ.setdefault("CONFIG_PATH", "configs/config.yaml")
 
 def pytest_configure(config):
     """Register custom pytest markers."""
-    config.addinivalue_line(
-        "markers", "slow: marks tests as slow (skip with -m 'not slow')"
-    )
-    config.addinivalue_line(
-        "markers", "integration: marks integration tests (need live services)"
-    )
+    config.addinivalue_line("markers", "slow: marks tests as slow (skip with -m 'not slow')")
+    config.addinivalue_line("markers", "integration: marks integration tests (need live services)")
     config.addinivalue_line("markers", "api: marks API endpoint tests")
 
 

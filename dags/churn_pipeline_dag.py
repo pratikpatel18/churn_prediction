@@ -118,9 +118,7 @@ def task_validate_features(**ctx):
     result = validator.validate_features(df)
 
     if not result["success"]:
-        raise ValueError(
-            f"Feature validation FAILED — {result['n_failed']} checks violated."
-        )
+        raise ValueError(f"Feature validation FAILED — {result['n_failed']} checks violated.")
 
     logger.success("Feature validation passed ✓")
 

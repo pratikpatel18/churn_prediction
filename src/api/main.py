@@ -162,9 +162,7 @@ async def health():
 async def model_info():
     try:
         client = mlflow.tracking.MlflowClient(tracking_uri=MLFLOW_URI)
-        versions = client.search_model_versions(
-            f"name='{CONFIG['mlflow']['model_name']}'"
-        )
+        versions = client.search_model_versions(f"name='{CONFIG['mlflow']['model_name']}'")
         return {
             "model_name": CONFIG["mlflow"]["model_name"],
             "versions": [
@@ -181,9 +179,7 @@ async def predict(customer: CustomerFeatures):
     global engineer
 
     if not predictor or not predictor.model:
-        raise HTTPException(
-            status_code=503, detail="Model not loaded. Run pipeline first."
-        )
+        raise HTTPException(status_code=503, detail="Model not loaded. Run pipeline first.")
 
     if engineer is None:
         engineer = FeatureEngineer(CONFIG)

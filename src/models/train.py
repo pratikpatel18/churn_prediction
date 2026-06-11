@@ -26,13 +26,20 @@ from imblearn.over_sampling import SMOTE
 from loguru import logger
 from optuna.samplers import TPESampler
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (accuracy_score, average_precision_score,
-                             classification_report, confusion_matrix, f1_score,
-                             log_loss, matthews_corrcoef,
-                             precision_recall_curve, precision_score,
-                             recall_score, roc_auc_score)
-from sklearn.model_selection import (StratifiedKFold, cross_val_score,
-                                     train_test_split)
+from sklearn.metrics import (
+    accuracy_score,
+    average_precision_score,
+    classification_report,
+    confusion_matrix,
+    f1_score,
+    log_loss,
+    matthews_corrcoef,
+    precision_recall_curve,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
+from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
 
 warnings.filterwarnings("ignore")
 optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -54,9 +61,7 @@ def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray, y_prob: np.ndarray) 
     }
 
 
-def compute_extended_metrics(
-    y_true: np.ndarray, y_pred: np.ndarray, y_prob: np.ndarray
-) -> dict:
+def compute_extended_metrics(y_true: np.ndarray, y_pred: np.ndarray, y_prob: np.ndarray) -> dict:
     """
     Extended metrics logged to MLflow on top of core metrics:
     - Matthews Correlation Coefficient (MCC)
@@ -214,16 +219,12 @@ class ModelTrainer:
         if self.model_cfg.get("handle_imbalance"):
             sm = SMOTE(random_state=cfg["random_state"])
             X_train, y_train = sm.fit_resample(X_train, y_train)
-            logger.info(
-                f"After SMOTE: {X_train.shape}  |  churn rate: {y_train.mean():.2%}"
-            )
+            logger.info(f"After SMOTE: {X_train.shape}  |  churn rate: {y_train.mean():.2%}")
 
         results = {}
         for model_name in self.model_cfg["candidates"]:
             logger.info(f"\n{'='*55}\nTuning: {model_name.upper()}\n{'='*55}")
-            metrics, run_id = self._tune_and_log(
-                model_name, X_train, y_train, X_test, y_test
-            )
+            metrics, run_id = self._tune_and_log(model_name, X_train, y_train, X_test, y_test)
             results[model_name] = {"metrics": metrics, "run_id": run_id}
 
         self._select_best(results, X_test, y_test)
@@ -482,8 +483,7 @@ class ModelTrainer:
             clean = {
                 k: v
                 for k, v in params.items()
-                if k
-                not in ["use_label_encoder", "eval_metric", "random_state", "n_jobs"]
+                if k not in ["use_label_encoder", "eval_metric", "random_state", "n_jobs"]
             }
             return xgb.XGBClassifier(
                 **clean,
