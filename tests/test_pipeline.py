@@ -157,12 +157,14 @@ class TestFeatureEngineer:
 
     def test_charge_ratio_non_negative(self, cleaned_df, config, tmp_path):
         from src.features.engineer import FeatureEngineer
+
         engineer = FeatureEngineer(config=config, artifact_dir=str(tmp_path))
         df = engineer._create_features(cleaned_df.copy())
         assert (df["charge_ratio"] >= 0).all()
 
     def test_services_count_non_negative(self, cleaned_df, config, tmp_path):
         from src.features.engineer import FeatureEngineer
+
         engineer = FeatureEngineer(config=config, artifact_dir=str(tmp_path))
         df = engineer._create_features(cleaned_df.copy())
         assert (df["services_count"] >= 0).all()
@@ -322,12 +324,13 @@ class TestFastAPI:
 
     def test_batch_endpoint(self, client, sample_payload):
         import src.api.main as api_module
+
         mock_predictor = api_module.predictor
         mock_predictor.predict.return_value = {
-        "churn_probability": [0.75, 0.75],
-        "churn_prediction": [1, 1],
-        "risk_label": ["High", "High"],
-    }
+            "churn_probability": [0.75, 0.75],
+            "churn_prediction": [1, 1],
+            "risk_label": ["High", "High"],
+        }
         payload = {"customers": [sample_payload, sample_payload]}
         r = client.post("/predict/batch", json=payload)
         assert r.status_code == 200
