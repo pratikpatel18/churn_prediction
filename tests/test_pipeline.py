@@ -155,13 +155,17 @@ class TestFeatureEngineer:
         if "risk_score" in features_df.columns:
             assert pd.api.types.is_numeric_dtype(features_df["risk_score"])
 
-    def test_charge_ratio_non_negative(self, features_df):
-        if "charge_ratio" in features_df.columns:
-            assert (features_df["charge_ratio"] >= 0).all()
+    def test_charge_ratio_non_negative(self, cleaned_df, config, tmp_path):
+        from src.features.engineer import FeatureEngineer
+        engineer = FeatureEngineer(config=config, artifact_dir=str(tmp_path))
+        df = engineer._create_features(cleaned_df.copy())
+        assert (df["charge_ratio"] >= 0).all()
 
-    def test_services_count_non_negative(self, features_df):
-        if "services_count" in features_df.columns:
-            assert (features_df["services_count"] >= 0).all()
+    def test_services_count_non_negative(self, cleaned_df, config, tmp_path):
+        from src.features.engineer import FeatureEngineer
+        engineer = FeatureEngineer(config=config, artifact_dir=str(tmp_path))
+        df = engineer._create_features(cleaned_df.copy())
+        assert (df["services_count"] >= 0).all()
 
     def test_customer_id_dropped(self, features_df):
         assert "customerID" not in features_df.columns
@@ -317,6 +321,13 @@ class TestFastAPI:
         assert r.status_code == 422
 
     def test_batch_endpoint(self, client, sample_payload):
+        import src.api.main as api_module
+        mock_predictor = api_module.predictor
+        mock_predictor.predict.return_value = {
+        "churn_probability": [0.75, 0.75],
+        "churn_prediction": [1, 1],
+        "risk_label": ["High", "High"],
+    }
         payload = {"customers": [sample_payload, sample_payload]}
         r = client.post("/predict/batch", json=payload)
         assert r.status_code == 200
