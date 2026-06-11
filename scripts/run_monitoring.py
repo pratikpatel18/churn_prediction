@@ -1,14 +1,3 @@
-"""
-scripts/run_monitoring.py
-──────────────────────────
-Standalone drift monitoring script.
-Can be run manually or via Airflow / cron.
-
-Usage:
-    python scripts/run_monitoring.py
-    python scripts/run_monitoring.py --reference-path data/reference/reference_dataset.parquet
-    python scripts/run_monitoring.py --current-path  data/features/churn_features.parquet
-"""
 
 import argparse
 import sys
@@ -82,7 +71,8 @@ def main(args):
     print(f"  Dataset Drift     : {'YES ⚠️' if ds.get('dataset_drift') else 'NO ✅'}")
     print(f"  Drifted Features  : {ds.get('n_drifted_features', 0)} / {ds.get('n_features', 0)}")
     print(f"  Share Drifted     : {ds.get('share_drifted', 0):.1%}")
-    print(f"  Tests Passed      : {'ALL ✅' if ts.get('all_passed') else f'{ts.get(\"n_failed\",0)} FAILED ❌'}")
+    status = 'ALL PASSED' if ts.get('all_passed') else f'{ts.get("n_failed", 0)} FAILED'
+    print(f"  Tests Passed    : {status}")
 
     if report.get("alerts"):
         print(f"\n  🚨 ALERTS ({len(report['alerts'])})")

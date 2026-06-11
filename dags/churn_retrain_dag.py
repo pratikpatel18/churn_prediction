@@ -1,19 +1,4 @@
-"""
-Airflow DAG — Automated Model Retraining & Promotion
-──────────────────────────────────────────────────────
-Runs every Monday at 04:00 UTC (after the data pipeline completes).
 
-Flow:
-  evaluate_current_model
-      ↓
-  [branch] performance_ok?
-      ├── YES → skip_retrain (model is fine)
-      └── NO  → retrain_model
-                    ↓
-                promote_new_model (Staging → Production)
-                    ↓
-                notify_retrain
-"""
 
 from __future__ import annotations
 

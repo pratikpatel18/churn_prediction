@@ -1,14 +1,3 @@
-"""
-Monitoring Module — Evidently AI
-──────────────────────────────────
-Detects data drift and model degradation between a reference dataset
-(what the model was trained on) and current production data.
-
-Outputs:
-  - JSON report consumed by the Streamlit dashboard
-  - HTML report saved as an artifact
-  - Alerts logged when drift exceeds thresholds
-"""
 
 import json
 from datetime import datetime

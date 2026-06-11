@@ -1,13 +1,4 @@
-"""
-scripts/check_model_quality.py
-───────────────────────────────
-Quality gate script used by:
-  - GitHub Actions CI/CD (pulls best run from MLflow, checks thresholds)
-  - Airflow retrain DAG (after retraining)
 
-Exits with code 1 if thresholds not met → fails the CI pipeline.
-Writes model_eval_result.txt for the GitHub Actions PR comment step.
-"""
 
 import json
 import os

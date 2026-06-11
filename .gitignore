@@ -1,22 +1,58 @@
-# Virtual environment
-venv_local/
-venv/
-.venv/
-env/
-
-# Python cache
+# ── Python ────────────────────────────────────────
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+*.so
+venv/
+venv_local/
 
-# Logs
-*.log
+
+# ── Data files (too large for Git) ────────────────
+data/raw/*.csv
+data/processed/*.parquet
+data/reference/*.parquet
+
+# ── Model artifacts (too large, stored in MLflow) ─
+artifacts/models/*.joblib
+artifacts/models/*.pkl
+artifacts/models/*.json
+artifacts/mlflow/
+
+# ── MLflow local storage ──────────────────────────
+mlruns/
+mlflow.db
+
+# ── Airflow runtime files ─────────────────────────
 logs/
+airflow.db
+airflow.cfg
+standalone_admin_password.txt
 
-# Environment variables
-.env
+# ── Reports (generated at runtime) ────────────────
+artifacts/reports/
+artifacts/plots/
 
-# OS files
+# ── Docker volumes ─────────────────────────────────
+postgres-data/
+pgdata/
+
+# ── OS files ──────────────────────────────────────
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# ── VS Code ───────────────────────────────────────
+.vscode/
+*.code-workspace
+
+# ── Jupyter checkpoints ───────────────────────────
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# ── Temp test files ───────────────────────────────
+test.json
+*.tmp
+

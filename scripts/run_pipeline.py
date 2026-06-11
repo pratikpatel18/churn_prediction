@@ -1,14 +1,3 @@
-"""
-scripts/run_pipeline.py
-───────────────────────
-One-shot script that runs the full pipeline end-to-end without Airflow.
-Perfect for first-time setup, local development, and CI/CD.
-
-Usage:
-    python scripts/run_pipeline.py
-    python scripts/run_pipeline.py --skip-training
-    python scripts/run_pipeline.py --data-path data/raw/churn_data.csv
-"""
 
 import argparse
 import sys

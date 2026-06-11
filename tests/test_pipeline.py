@@ -1,9 +1,4 @@
-"""
-Test Suite — Churn Prediction Pipeline
-───────────────────────────────────────
-Covers: data ingestion, feature engineering, model training, and API.
-Run: pytest tests/ -v --cov=src
-"""
+
 
 import json
 import sys

@@ -1,7 +1,4 @@
-# ─────────────────────────────────────────────────────────────────────
-# Dockerfile.airflow
-# Apache Airflow 2.9.1 + all project ML dependencies
-# ─────────────────────────────────────────────────────────────────────
+
 
 FROM apache/airflow:2.9.1-python3.11
 

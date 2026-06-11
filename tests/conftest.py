@@ -1,8 +1,3 @@
-"""
-conftest.py — Shared pytest fixtures and configuration.
-Automatically loaded by pytest before running any tests.
-"""
-
 import os
 import sys
 from pathlib import Path

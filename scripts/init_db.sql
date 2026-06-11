@@ -1,10 +1,4 @@
--- ─────────────────────────────────────────────────────────────────
--- PostgreSQL Initialization Script
--- Runs automatically when the postgres container starts for the first time
--- Creates: airflow_db, mlflow_db (churn_db already created by POSTGRES_DB)
--- ─────────────────────────────────────────────────────────────────
 
--- Create Airflow database
 CREATE DATABASE airflow_db;
 
 -- Create MLflow database

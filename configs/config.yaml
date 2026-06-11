@@ -1,7 +1,4 @@
-# ─────────────────────────────────────────────────────────────────────
-# Central Project Configuration
-# Works for both Docker and local development
-# ─────────────────────────────────────────────────────────────────────
+
 
 project:
   name: "churn_prediction"
@@ -105,7 +102,7 @@ monitoring:
 api:
   host:                 "0.0.0.0"
   port:                 8000
-  prediction_threshold: 0.5
+  prediction_threshold: 0.30
   log_predictions:      true
 
 airflow:

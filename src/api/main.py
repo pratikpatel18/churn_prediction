@@ -176,8 +176,6 @@ async def predict(customer: CustomerFeatures):
     if not hasattr(engineer, 'preprocessor') or engineer.preprocessor is None:
         _load_preprocessor(engineer)
 
-    if not hasattr(engineer, 'preprocessor') or engineer.preprocessor is None:
-        raise HTTPException(status_code=503, detail="Preprocessor not fitted. Call fit_transform first or load_preprocessor().")
 
     t0  = time.perf_counter()
     rid = str(uuid.uuid4())

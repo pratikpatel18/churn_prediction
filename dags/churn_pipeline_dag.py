@@ -1,24 +1,4 @@
-"""
-Airflow DAG — Churn Prediction Data Pipeline
-─────────────────────────────────────────────
-Runs every Monday at 02:00 UTC.
 
-DAG flow:
-  ingest_raw_data
-      ↓
-  validate_raw_data         ← Great Expectations
-      ↓
-  engineer_features
-      ↓
-  validate_features         ← Great Expectations
-      ↓
-  dvc_version_data          ← DVC push
-      ↓
-  export_reference_dataset  ← for Evidently drift monitoring
-
-Separate retraining DAG (churn_retrain_dag.py) checks model perf
-and fires automatically if it degrades.
-"""
 
 from __future__ import annotations
 

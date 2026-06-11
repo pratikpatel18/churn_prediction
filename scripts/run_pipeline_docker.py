@@ -1,12 +1,4 @@
-"""
-scripts/run_pipeline_docker.py
-───────────────────────────────
-Runs the full ML pipeline inside the Airflow Docker container.
-Called manually for first-time setup or triggered by Airflow DAG.
 
-Usage (from your Windows terminal after docker compose up):
-    docker exec -it churn_airflow_web python scripts/run_pipeline_docker.py
-"""
 
 import os
 import sys

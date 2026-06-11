@@ -1,18 +1,4 @@
 
-
-# ─────────────────────────────────────────────────────────────────────
-# Churn Prediction — Docker Compose Stack (Windows Docker Desktop)
-#
-# Services start order:
-#   postgres → mlflow → airflow-init → airflow-web + airflow-scheduler
-#                                   → api → streamlit
-#
-# All services communicate via "churn_net" bridge network.
-# Inside containers use service names (postgres, mlflow, api)
-# From Windows browser use localhost (localhost:8080, localhost:5000 etc.)
-# ─────────────────────────────────────────────────────────────────────
-
-# Shared Airflow environment — reused by webserver, scheduler, init
 x-airflow-common: &airflow-common
   build:
     context: .

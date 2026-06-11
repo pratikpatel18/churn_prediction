@@ -79,9 +79,17 @@ class FeatureEngineer:
         if "Contract" in X.columns:
             X["Contract"] = X["Contract"].map({v: i for i, v in enumerate(self.CONTRACT_ORDER)}).fillna(0).astype(int)
         X = pd.get_dummies(X, columns=["InternetService", "PaymentMethod", "tenure_group"], drop_first=False)
-        for col in X.columns:
-            if X[col].dtype == bool:
-                X[col] = X[col].astype(int)
+        # Add missing columns that exist in training but not in this single row
+        expected_dummies = [
+            "InternetService_DSL", "InternetService_Fiber optic", "InternetService_No",
+            "PaymentMethod_Bank transfer (automatic)", "PaymentMethod_Credit card (automatic)",
+            "PaymentMethod_Electronic check", "PaymentMethod_Mailed check",
+            "tenure_group_developing", "tenure_group_established",
+            "tenure_group_loyal", "tenure_group_new",
+        ]
+        for col in expected_dummies:
+            if col not in X.columns:
+                X[col] = False
         num_cols = [c for c in ["tenure", "MonthlyCharges", "TotalCharges", "charge_ratio", "services_count", "risk_score", "charge_per_service"] if c in X.columns]
         if fit:
             self.scaler = StandardScaler()
@@ -98,6 +106,19 @@ class FeatureEngineer:
             if scaler is None:
                 raise RuntimeError("Could not load scaler")
             X[num_cols] = scaler.transform(X[num_cols])
+        # Force all dummy columns to bool to match training schema
+        dummy_cols = [
+            "InternetService_DSL", "InternetService_Fiber optic", "InternetService_No",
+            "PaymentMethod_Bank transfer (automatic)", "PaymentMethod_Credit card (automatic)",
+            "PaymentMethod_Electronic check", "PaymentMethod_Mailed check",
+            "tenure_group_developing", "tenure_group_established",
+            "tenure_group_loyal", "tenure_group_new",
+        ]
+        for col in dummy_cols:
+            if col in X.columns:
+                X[col] = X[col].astype(bool)
+            else:
+                X[col] = False
         if y is not None:
             X[target_col] = y.values
         return X
