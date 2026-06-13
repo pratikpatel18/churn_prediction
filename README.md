@@ -10,8 +10,39 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
+#  What This Does
 
-## 🏗️ Architecture
+Takes customer data (contract type, tenure, charges, services) and predicts churn probability. The whole thing runs   in Docker — Airflow schedules the pipeline, MLflow tracks experiments, FastAPI serves predictions, and Streamlit shows a live dashboard
+
+##  Tech Stack
+
+| Layer | Tools |
+|---|---|
+| **Data Pipeline** | Apache Airflow, Great Expectations |
+| **Data Versioning** | DVC (Data Version Control) + Git |
+| **Feature Engineering** | Pandas, Scikit-learn, imbalanced-learn (SMOTE) |
+| **Experiment Tracking** | MLflow |
+| **Hyperparameter Tuning** | Optuna (TPE Sampler) |
+| **Models** | Logistic Regression, XGBoost, LightGBM |
+| **Model Serving** | FastAPI + Uvicorn |
+| **Drift Monitoring** | Evidently AI |
+| **Dashboard** | Streamlit + Plotly |
+| **Database** | PostgreSQL |
+| **Containerisation** | Docker + Docker Compose |
+| **CI/CD** | GitHub Actions |
+| **Language** | Python 3.11 |
+
+
+## Results
+
+Best model is LightGBM:
+
+MetricScore ---- F10.623  
+ROC-AUC  ----- 0.826       
+Recall ----- 0.644 
+Accuracy ----- 0.772
+ 
+##  Architecture
 
 ```
 Raw CSV Data
@@ -61,80 +92,25 @@ Raw CSV Data
 │  auto-promote new model to Production       │
 └─────────────────────────────────────────────┘
 ```
+---
 
-## 🧰 Tech Stack
+##  Project Structure
 
-| Layer | Tools |
-|---|---|
-| **Data Pipeline** | Apache Airflow, Great Expectations |
-| **Data Versioning** | DVC (Data Version Control) + Git |
-| **Feature Engineering** | Pandas, Scikit-learn, imbalanced-learn (SMOTE) |
-| **Experiment Tracking** | MLflow |
-| **Hyperparameter Tuning** | Optuna (TPE Sampler) |
-| **Models** | Logistic Regression, XGBoost, LightGBM |
-| **Model Serving** | FastAPI + Uvicorn |
-| **Drift Monitoring** | Evidently AI |
-| **Dashboard** | Streamlit + Plotly |
-| **Database** | PostgreSQL |
-| **Containerisation** | Docker + Docker Compose |
-| **CI/CD** | GitHub Actions |
-| **Language** | Python 3.11 |
+```
+src/
+  data/         - ingestion and validation
+  features/     - feature engineering
+  models/       - training and inference
+  api/          - FastAPI endpoints
+  monitoring/   - drift detection
+dags/           - Airflow DAGs
+dashboard/      - Streamlit app
+configs/        - config.yaml
+docker/         - Dockerfiles
 
 ---
 
-## 📁 Project Structure
-
-```
-churn_prediction/
-├── .github/
-│   └── workflows/
-│       └── ci_cd.yml           ← GitHub Actions CI/CD
-├── configs/
-│   └── config.yaml             ← Central configuration (all settings)
-├── dags/
-│   ├── churn_pipeline_dag.py   ← Airflow data pipeline DAG
-│   └── churn_retrain_dag.py    ← Automated retraining DAG
-├── dashboard/
-│   └── streamlit_app.py        ← Monitoring dashboard
-├── docker/
-│   ├── Dockerfile.api          ← FastAPI Docker image
-│   └── Dockerfile.streamlit    ← Streamlit Docker image
-├── notebooks/
-│   ├── 01_EDA.ipynb            ← Exploratory Data Analysis
-│   └── 02_Model_Experiments.ipynb ← MLflow experiment comparison
-├── scripts/
-│   ├── run_pipeline.py         ← One-shot full pipeline runner
-│   ├── run_monitoring.py       ← Standalone drift check
-│   ├── check_model_quality.py  ← CI quality gate
-│   └── init_db.sql             ← PostgreSQL schema
-├── src/
-│   ├── data/
-│   │   ├── ingest.py           ← Data ingestion & cleaning
-│   │   └── validate.py         ← Great Expectations validation
-│   ├── features/
-│   │   └── engineer.py         ← Feature engineering pipeline
-│   ├── models/
-│   │   ├── train.py            ← MLflow + Optuna training
-│   │   └── predict.py          ← Inference wrapper
-│   ├── api/
-│   │   └── main.py             ← FastAPI app
-│   └── monitoring/
-│       └── drift_monitor.py    ← Evidently drift detection
-├── tests/
-│   └── test_pipeline.py        ← Full test suite
-├── .dvc/config                 ← DVC remote config
-├── .env.example                ← Environment variable template
-├── .gitignore
-├── docker-compose.yml          ← Full stack Docker Compose
-├── dvc.yaml                    ← DVC pipeline stages
-├── Makefile                    ← Developer task runner
-├── requirements.txt
-└── setup.py
-```
-
----
-
-## 🚀 Quick Start
+## Quick Start
 
 ### Option A — One command (Docker)
 ```bash
@@ -179,7 +155,7 @@ make dashboard
 
 ---
 
-## ⚙️ Running Individual Steps
+##  Running Individual Steps
 
 ```bash
 # Data pipeline only (no training)
@@ -203,7 +179,7 @@ dvc repro
 
 ---
 
-## 🔌 API Usage
+##  API Usage
 
 ```bash
 # Health check
@@ -239,7 +215,7 @@ Interactive docs: **http://localhost:8000/docs**
 
 ---
 
-## 🧪 Test Results
+##  Test Results
 
 ```bash
 make test
@@ -256,7 +232,7 @@ make test
 
 ---
 
-## 📊 Model Performance
+##  Model Performance
 
 | Model | F1 | Accuracy | ROC-AUC | Recall |
 |---|---|---|---|---|
@@ -268,7 +244,7 @@ make test
 
 ---
 
-## 🔄 Automated Retraining
+##  Automated Retraining
 
 The `churn_auto_retrain` Airflow DAG runs every Monday at 04:00 UTC:
 
@@ -280,7 +256,7 @@ The `churn_auto_retrain` Airflow DAG runs every Monday at 04:00 UTC:
 
 ---
 
-## 📦 DVC Data Versioning
+##  DVC Data Versioning
 
 ```bash
 # Pull the latest versioned datasets
@@ -298,7 +274,7 @@ dvc push
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/your-feature`)
@@ -306,7 +282,30 @@ dvc push
 4. Push and open a Pull Request — CI runs automatically
 
 ---
+## Things I Got Stuck On
 
-## 📄 License
+- Keeping this here because these took real time to figure out:
+
+- SQLAlchemy 2.x breaks Airflow — had to pin to 1.4.52 and make sure it gets installed last in the Dockerfile otherwise something else overwrites it.
+
+- MLflow wraps the model in PyFuncModel — calling .predict() returns class labels [0, 1] not probabilities. Spent a  while on this. Fix was to unwrap the booster with model._model_impl.lgb_model and call predict_proba directly.
+
+- PowerShell breaks JSON — can't pass JSON with -d flag in PowerShell, it mangles the quotes. Workaround: write JSON to a file, docker cp it into the container, use --data-binary inside.
+
+- SHAP vs numpy version conflict — SHAP 0.51 needs numpy>=2, MLflow 2.13 needs numpy<2. Fixed by pinning shap==0.44.0.
+
+- Bool columns from pd.get_dummies — LightGBM doesn't like bool dtype, fails silently. Had to explicitly check  dtype == bool and cast.
+
+## Stuff I'd Add With More Time
+
+-proper CI test coverage (currently limited)
+-cloud deployment (everything runs locally for now)
+-real DVC remote storage instead of local
+-better drift alerts
+
+
+Pratik Patel — Final Year B.Tech CSE (AI/ML), Kalinga University
+
+##  License
 
 MIT License — see [LICENSE](LICENSE) for details.
