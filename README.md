@@ -298,10 +298,10 @@ dvc push
 
 ## Stuff I'd Add With More Time
 
--proper CI test coverage (currently limited)
--cloud deployment (everything runs locally for now)
--real DVC remote storage instead of local
--better drift alerts
+- proper CI test coverage (currently limited)
+- cloud deployment (everything runs locally for now)
+- real DVC remote storage instead of local
+- better drift alerts
 
 
 Pratik Patel — Final Year B.Tech CSE (AI/ML), Kalinga University
