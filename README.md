@@ -37,10 +37,10 @@ Takes customer data (contract type, tenure, charges, services) and predicts chur
 
 Best model is LightGBM:
 
-MetricScore ---- F10.623  
-ROC-AUC  ----- 0.826       
-Recall ----- 0.644 
-Accuracy ----- 0.772
+-  MetricScore ---- F10.623  
+-  ROC-AUC  ----- 0.826       
+-  Recall ----- 0.644 
+-  Accuracy ----- 0.772
  
 ##  Architecture
 
