@@ -1,0 +1,37 @@
+feature,importance
+charge_ratio,0.873995
+risk_score,0.8694526
+MonthlyCharges,0.7598695
+Contract,0.5537084
+OnlineSecurity,0.47065717
+TotalCharges,0.4417885
+TechSupport,0.4232343
+tenure,0.3831125
+OnlineBackup,0.34245393
+charge_per_service,0.31935552
+DeviceProtection,0.30976802
+PaymentMethod_Electronic check,0.28626952
+services_count,0.27396324
+PaymentMethod_Bank transfer (automatic),0.2481216
+StreamingMovies,0.22993466
+StreamingTV,0.22638552
+PaymentMethod_Mailed check,0.2042157
+PaymentMethod_Credit card (automatic),0.20025803
+Dependents,0.18687089
+gender,0.17332141
+PhoneService,0.14608231
+tenure_group_established,0.14521901
+PaperlessBilling,0.12987255
+tenure_group_loyal,0.12087733
+MultipleLines,0.10617308
+Partner,0.09716756
+tenure_group_developing,0.09368394
+electronic_check,0.08112433
+InternetService_Fiber optic,0.07605496
+has_internet,0.06903464
+SeniorCitizen,0.06837074
+fiber_optic,0.040948458
+high_risk_contract,0.027839929
+InternetService_DSL,0.027204242
+tenure_group_new,0.023644352
+InternetService_No,0.007066864
