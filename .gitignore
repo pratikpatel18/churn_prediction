@@ -58,3 +58,6 @@ fix_all.py
 fix_engineer.py
 restore_engineer.py
 test_predict.json
+artifacts/1/
+artifacts/2/
+artifacts/3/
