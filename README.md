@@ -3,18 +3,23 @@
 > A production-grade MLOps pipeline for predicting customer churn using the Telco dataset.
 > Built to demonstrate real-world engineering across the full ML lifecycle.
 
-[![CI/CD](https://github.com/yourusername/churn_prediction/actions/workflows/ci_cd.yml/badge.svg)](https://github.com/yourusername/churn_prediction/actions)
+[![CI/CD](https://github.com/pratikpatel18/churn_prediction/actions/workflows/ci_cd.yml/badge.svg)](https://github.com/pratikpatel18/churn_prediction/actions)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://python.org)
 [![MLflow](https://img.shields.io/badge/MLflow-2.13-orange)](https://mlflow.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111-green)](https://fastapi.tiangolo.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
-#  What This Does
 
-Takes customer data (contract type, tenure, charges, services) and predicts churn probability. The whole thing runs   in Docker — Airflow schedules the pipeline, MLflow tracks experiments, FastAPI serves predictions, and Streamlit shows a live dashboard
+## What This Does
 
-##  Tech Stack
+Takes customer data (contract type, tenure, charges, services) and predicts churn probability.
+The whole thing runs in Docker — Airflow schedules the pipeline, MLflow tracks experiments,
+FastAPI serves predictions, and Streamlit shows a live dashboard.
+
+---
+
+## Tech Stack
 
 | Layer | Tools |
 |---|---|
@@ -23,7 +28,7 @@ Takes customer data (contract type, tenure, charges, services) and predicts chur
 | **Feature Engineering** | Pandas, Scikit-learn, imbalanced-learn (SMOTE) |
 | **Experiment Tracking** | MLflow |
 | **Hyperparameter Tuning** | Optuna (TPE Sampler) |
-| **Models** | Logistic Regression, XGBoost, LightGBM |
+| **Models** | XGBoost, LightGBM |
 | **Model Serving** | FastAPI + Uvicorn |
 | **Drift Monitoring** | Evidently AI |
 | **Dashboard** | Streamlit + Plotly |
@@ -32,38 +37,52 @@ Takes customer data (contract type, tenure, charges, services) and predicts chur
 | **CI/CD** | GitHub Actions |
 | **Language** | Python 3.11 |
 
+---
 
 ## Results
 
-Best model is LightGBM:
+Best model: **LightGBM** (verified from MLflow)
 
--  MetricScore ---- F10.623  
--  ROC-AUC  ----- 0.826       
--  Recall ----- 0.644 
--  Accuracy ----- 0.772
- 
-##  Architecture
+| Metric | Value |
+|--------|-------|
+| F1 | **0.60** |
+| ROC-AUC | **0.83** |
+| Recall | 0.6444 |
+| Precision | 0.5618 |
+| Accuracy | 0.7722 |
+
+> Numbers confirmed from MLflow experiment run `churn_prediction_v1`.
+> Dataset: 7,043 telecom customers, 26.5% churn rate.
+
+---
+
+## Architecture
 
 ```
-Raw CSV Data
+Raw CSV Data (7,043 records)
      │
      ▼
 ┌─────────────────────────────────────────────┐
 │          Apache Airflow DAG                 │
-│  ingest → validate → features → DVC push   │
+│  ingest → validate (17 GE checks) →        │
+│  features → train → register               │
 └─────────────────────────────────────────────┘
      │
      ▼
 ┌─────────────────────────────────────────────┐
 │         Feature Engineering                 │
+│  9 domain features:                         │
 │  tenure groups · risk score · charge ratio  │
-│  services count · one-hot encoding · scale  │
+│  services count · has_internet · fiber_optic│
+│  electronic_check · high_risk_contract      │
+│  charge_per_service                         │
 └─────────────────────────────────────────────┘
      │
      ▼
 ┌─────────────────────────────────────────────┐
 │     Optuna Hyperparameter Tuning            │
-│   Logistic Regression · XGBoost · LightGBM │
+│   XGBoost (50 trials) · LightGBM (50 trials)│
+│   StratifiedKFold CV · SMOTE balancing      │
 │          tracked in MLflow                  │
 └─────────────────────────────────────────────┘
      │
@@ -76,236 +95,371 @@ Raw CSV Data
      ▼
 ┌─────────────────────────────────────────────┐
 │        FastAPI Prediction Service           │
-│   /predict · /predict/batch · /health       │
+│   POST /predict (single)                    │
+│   POST /predict/batch (up to 500 records)   │
+│   GET  /health · GET /metrics               │
 └─────────────────────────────────────────────┘
      │
      ▼
 ┌─────────────────────────────────────────────┐
 │    Evidently AI + Streamlit Dashboard       │
-│  drift detection · perf monitoring · alerts │
+│  drift reports · perf monitoring · alerts   │
 └─────────────────────────────────────────────┘
      │
      ▼
 ┌─────────────────────────────────────────────┐
 │    Automated Retraining DAG (Airflow)       │
-│  weekly check → retrain if F1 drops        │
-│  auto-promote new model to Production       │
+│  weekly check → retrain if F1 < 0.75       │
+│  auto-promote better model to Production    │
 └─────────────────────────────────────────────┘
 ```
+
 ---
 
-##  Project Structure
+## Project Structure
 
 ```
-src/
-  data/         - ingestion and validation
-  features/     - feature engineering
-  models/       - training and inference
-  api/          - FastAPI endpoints
-  monitoring/   - drift detection
-dags/           - Airflow DAGs
-dashboard/      - Streamlit app
-configs/        - config.yaml
-docker/         - Dockerfiles
+churn_prediction/
+├── .github/workflows/ci_cd.yml   # GitHub Actions CI/CD
+├── artifacts/
+│   ├── models/
+│   │   ├── preprocessor.joblib   # NOT in git — regenerate after clone
+│   │   └── scaler.joblib         # NOT in git — regenerate after clone
+│   └── reports/                  # Evidently drift HTML reports
+├── configs/config.yaml           # Central config for all components
+├── dags/
+│   ├── churn_pipeline_dag.py     # Weekly training pipeline
+│   └── churn_retrain_dag.py      # Automated retraining DAG
+├── dashboard/streamlit_app.py    # Streamlit monitoring dashboard
+├── data/
+│   ├── raw/churn_data.csv        # NOT in git — add manually
+│   ├── features/                 # Engineered feature parquet
+│   └── reference/               # Reference dataset for drift
+├── docker/                       # Dockerfiles for each service
+├── great_expectations/           # GE validation suite
+├── notebooks/                    # EDA, experiments, drift analysis
+├── scripts/                      # Pipeline and monitoring scripts
+├── src/
+│   ├── api/main.py               # FastAPI app — all endpoints
+│   ├── data/ingest.py            # DataIngester class
+│   ├── data/validate.py          # 17 Great Expectations checks
+│   ├── features/engineer.py      # FeatureEngineer class
+│   ├── models/predict.py         # ChurnPredictor class
+│   ├── models/train.py           # ModelTrainer + Optuna
+│   └── monitoring/drift_monitor.py # DriftMonitor class
+├── tests/test_pipeline.py        # 36 pytest tests
+├── .env.example                  # Copy to .env and fill values
+├── docker-compose.yml            # All 7 services
+├── pyproject.toml                # Black + isort config
+└── requirements.txt
+```
 
 ---
 
 ## Quick Start
 
-### Option A — One command (Docker)
-```bash
-# 1. Clone & configure
-git clone https://github.com/yourusername/churn_prediction.git
-cd churn_prediction
-cp .env.example .env          # Fill in your values
+### Option A — Docker (recommended)
 
-# 2. Add your dataset
+```bash
+# 1. Clone
+git clone https://github.com/pratikpatel18/churn_prediction.git
+cd churn_prediction
+
+# 2. Configure
+cp .env.example .env          # fill in your values
+
+# 3. Add dataset
 cp /path/to/WA_Fn-UseC_-Telco-Customer-Churn.csv data/raw/churn_data.csv
 
-# 3. Launch everything
+# 4. Start everything
 docker compose up -d
 
-# 4. Open services
-# Airflow   → http://localhost:8080  (admin/admin)
-# MLflow    → http://localhost:5000
-# API docs  → http://localhost:8000/docs
-# Dashboard → http://localhost:8501
+# 5. Wait 30 seconds then check status
+docker compose ps
+
+# 6. IMPORTANT — regenerate scaler after every fresh clone (see Known Issues)
+docker compose exec api python -c "
+import joblib, pandas as pd, numpy as np
+from sklearn.preprocessing import StandardScaler
+df = pd.read_csv('/app/data/raw/churn_data.csv')
+df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
+df['TotalCharges'] = df['TotalCharges'].fillna(df['TotalCharges'].median())
+services_cols = ['PhoneService','OnlineSecurity','OnlineBackup','DeviceProtection','TechSupport','StreamingTV','StreamingMovies']
+binary_map = {'Yes':1,'No':0,'No phone service':0,'No internet service':0}
+service_df = df[services_cols].replace(binary_map)
+df['services_count'] = service_df.apply(pd.to_numeric, errors='coerce').sum(axis=1)
+df['charge_ratio'] = np.where(df['TotalCharges']>0, df['MonthlyCharges']/df['TotalCharges'], 0.0)
+df['risk_score'] = ((df['Contract']=='Month-to-month').astype(int)*3 + (df['InternetService']=='Fiber optic').astype(int)*2 + (df['PaymentMethod']=='Electronic check').astype(int)*1 + (df['tenure']<12).astype(int)*2)
+df['charge_per_service'] = np.where(df['services_count']>0, df['MonthlyCharges']/df['services_count'], df['MonthlyCharges'])
+num_cols = ['tenure','MonthlyCharges','TotalCharges','charge_ratio','services_count','risk_score','charge_per_service']
+scaler = StandardScaler()
+scaler.fit(df[num_cols])
+joblib.dump(scaler, 'artifacts/models/scaler.joblib')
+print('Done!')
+"
+docker compose restart api
 ```
 
-### Option B — Local development
-```bash
-# 1. Setup
-make setup
+### Open services
 
-# 2. Add your dataset
-cp /path/to/churn_data.csv data/raw/churn_data.csv
-
-# 3. Start MLflow (in terminal 1)
-make mlflow
-
-# 4. Run the full pipeline (in terminal 2)
-make pipeline
-
-# 5. Start the API (in terminal 3)
-make api
-
-# 6. Start the dashboard (in terminal 4)
-make dashboard
-```
+| Service | URL | Login |
+|---------|-----|-------|
+| Airflow UI | http://localhost:8080 | admin / admin |
+| MLflow UI | http://localhost:5000 | — |
+| API docs | http://localhost:8000/docs | — |
+| Dashboard | http://localhost:8501 | — |
 
 ---
 
-##  Running Individual Steps
-
-```bash
-# Data pipeline only (no training)
-python scripts/run_pipeline.py --skip-training
-
-# Training only
-make train
-
-# Drift monitoring report
-make monitor
-
-# Run tests with coverage
-make test
-
-# Check model meets quality thresholds
-make quality-gate
-
-# DVC pipeline (reproduces all stages)
-dvc repro
-```
-
----
-
-##  API Usage
+## API Usage
 
 ```bash
 # Health check
 curl http://localhost:8000/health
 
-# Single prediction
-curl -X POST http://localhost:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "gender": "Male", "SeniorCitizen": 0,
-    "Partner": "Yes", "Dependents": "No",
-    "tenure": 6, "PhoneService": "Yes",
-    "MultipleLines": "No", "InternetService": "Fiber optic",
-    "OnlineSecurity": "No", "OnlineBackup": "No",
-    "DeviceProtection": "No", "TechSupport": "No",
-    "StreamingTV": "No", "StreamingMovies": "No",
-    "Contract": "Month-to-month", "PaperlessBilling": "Yes",
-    "PaymentMethod": "Electronic check",
-    "MonthlyCharges": 70.35, "TotalCharges": 422.1
-  }'
+# Single prediction (use Swagger UI at /docs — easier on Windows)
+# POST /predict with this body:
+{
+  "gender": "Male",
+  "SeniorCitizen": 0,
+  "Partner": "Yes",
+  "Dependents": "No",
+  "tenure": 6,
+  "PhoneService": "Yes",
+  "MultipleLines": "No",
+  "InternetService": "Fiber optic",
+  "OnlineSecurity": "No",
+  "OnlineBackup": "No",
+  "DeviceProtection": "No",
+  "TechSupport": "No",
+  "StreamingTV": "No",
+  "StreamingMovies": "No",
+  "Contract": "Month-to-month",
+  "PaperlessBilling": "Yes",
+  "PaymentMethod": "Electronic check",
+  "MonthlyCharges": 70.35,
+  "TotalCharges": 422.10
+}
 
 # Response:
-# {
-#   "request_id": "uuid-...",
-#   "churn_probability": 0.8731,
-#   "churn_prediction": 1,
-#   "risk_label": "Critical",
-#   "timestamp": "2024-01-15T10:30:00"
-# }
+{
+  "request_id": "uuid-...",
+  "churn_probability": 0.8731,
+  "churn_prediction": 1,
+  "risk_label": "Critical",
+  "timestamp": "2026-05-29T12:00:00"
+}
 ```
 
-Interactive docs: **http://localhost:8000/docs**
+**Risk labels:**
+- probability >= 0.75 → Critical
+- probability >= 0.50 → High
+- probability >= 0.30 → Medium
+- probability < 0.30 → Low
+
+> **Note on Windows/PowerShell:** curl syntax doesn't work in PowerShell.
+> Use the Swagger UI at http://localhost:8000/docs instead — much easier.
 
 ---
 
-##  Test Results
+## Data Validation — 17 Great Expectations Checks
 
-```bash
-make test
-# ✅ 25 tests passed | 94% coverage
-```
+| Category | Checks |
+|----------|--------|
+| Schema | All 21 columns present in order, row count 100–100,000 |
+| Completeness | No nulls in customerID, gender, tenure, MonthlyCharges, Churn |
+| Value ranges | tenure 0–72, MonthlyCharges 0–200, TotalCharges 0–10,000, SeniorCitizen 0–1 |
+| Set checks | gender in {Male,Female}, Churn in {0,1}, Contract 3 values, InternetService 3 values |
+| Uniqueness | customerID is unique |
+| Statistical | Churn rate between 5%–50% |
 
-| Module | Tests |
-|---|---|
-| Data ingestion | Schema, cleaning, null handling, dedup |
-| Feature engineering | Feature creation, encoding, scaling, transform parity |
-| Model metrics | Computation correctness, range checks |
-| FastAPI | Health, predict, batch, validation, schema |
-| Risk labels | Critical / High / Medium / Low thresholds |
+Pipeline halts automatically if any check fails.
 
 ---
 
-##  Model Performance
+## Feature Engineering — 9 Domain Features
 
-| Model | F1 | Accuracy | ROC-AUC | Recall |
-|---|---|---|---|---|
-| **LightGBM** ⭐ | **0.638** | **0.821** | **0.862** | 0.591 |
-| XGBoost | 0.621 | 0.811 | 0.848 | 0.574 |
-| Logistic Regression | 0.578 | 0.795 | 0.829 | 0.541 |
-
-*Results vary with hyperparameter search. Run `make train` for latest.*
+| Feature | Formula | Business meaning |
+|---------|---------|-----------------|
+| `tenure_group` | pd.cut(tenure, [0,12,24,48,72]) | Loyalty: new/developing/established/loyal |
+| `charge_ratio` | MonthlyCharges / TotalCharges | Detects plan changes |
+| `services_count` | Sum of 7 add-on services | Number of services subscribed |
+| `has_internet` | InternetService != "No" | Binary internet flag |
+| `high_risk_contract` | Contract == "Month-to-month" | Highest churn risk contract |
+| `fiber_optic` | InternetService == "Fiber optic" | Fiber users churn more |
+| `electronic_check` | PaymentMethod == "Electronic check" | Manual payment = higher churn |
+| `risk_score` | high_risk×3 + fiber×2 + echeck×1 + tenure<12×2 | Composite business risk |
+| `charge_per_service` | MonthlyCharges / services_count | Value per service |
 
 ---
 
-##  Automated Retraining
+## Model Training
+
+**Models:** XGBoost, LightGBM
+**Tuning:** Optuna TPE Bayesian search — 50 trials each
+**CV:** StratifiedKFold (5-fold) on training set
+**Imbalance:** SMOTE oversampling + class_weight='balanced'
+**Threshold:** Tuned via Precision-Recall curve (config: 0.30)
+**Tracking:** All runs logged to MLflow — params, metrics, SHAP plots, confusion matrix
+
+---
+
+## Automated Retraining
 
 The `churn_auto_retrain` Airflow DAG runs every Monday at 04:00 UTC:
 
-1. Evaluates current Production model on fresh data
-2. If F1 drops below **0.75** threshold → triggers Optuna retraining
-3. Compares new model vs current Production
-4. Auto-promotes if new model is better
-5. Archives the old Production version
+1. Loads Production model from MLflow Registry
+2. Evaluates F1 on latest 20% of feature data
+3. If F1 < **0.75** threshold → triggers full Optuna retraining
+4. Compares new model F1 vs current Production F1
+5. Auto-promotes to Production only if new model is better
+6. Archives old Production version
+7. Logs all weekly checks to MLflow
+
+Evidently AI runs drift detection separately — PSI and Jensen-Shannon
+divergence reports are visible on the Streamlit dashboard.
 
 ---
 
-##  DVC Data Versioning
+## Tests
 
 ```bash
-# Pull the latest versioned datasets
-dvc pull
+pytest tests/ --cov=src --cov-report=term-missing -q
+```
 
-# See pipeline DAG
-dvc dag
+**36 tests — all passing**
 
-# Re-run all pipeline stages
-dvc repro
+| Class | Count | What it covers |
+|-------|-------|---------------|
+| TestDataIngester | 10 | Schema, cleaning, nulls, dedup |
+| TestFeatureEngineer | 10 | Feature creation, encoding, transform parity |
+| TestMetricsComputation | 3 | F1, accuracy, ROC-AUC calculation |
+| TestFastAPI | 9 | Health, predict, batch, validation |
+| TestRiskLabels | 4 | Critical/High/Medium/Low thresholds |
 
-# Push new data version
-dvc push
+> Coverage is 37% overall — low because `train.py`, `drift_monitor.py`
+> and `validate.py` need live services (MLflow, Evidently, Airflow) to run.
+> Unit-testable components (API, features, data ingestion) are well covered.
+
+---
+
+## CI/CD — GitHub Actions
+
+5 jobs in `.github/workflows/ci_cd.yml`:
+
+| Job | Trigger | What it does |
+|-----|---------|-------------|
+| Lint & Format | Every push | Black, isort, flake8 |
+| Tests | After lint | 36 pytest tests |
+| Docker Build | Main branch | Build + push to Docker Hub (needs secrets) |
+| Weekly Pipeline | Schedule only | Full data pipeline via DVC |
+| Model Quality Gate | Schedule only | Check model F1 vs threshold |
+
+**Required GitHub secrets for full CI:**
+- `DOCKER_USERNAME`, `DOCKER_PASSWORD` — Docker Hub
+- `MLFLOW_TRACKING_URI`, `DATABASE_URL` — Production services
+- `DVC_GDRIVE_CREDENTIALS` — DVC remote storage
+
+---
+
+## Known Issues
+
+### 🔴 scaler.joblib missing after clone (most common issue)
+
+`scaler.joblib` is NOT in git. After every fresh clone or container
+restart, the API returns 503 on `/predict` until you regenerate it.
+
+Run the regeneration command in Quick Start Step 6 above.
+
+### 🟡 Permission denied on MLflow artifacts
+
+The API falls back to loading from run artifact directly — model still
+loads and works. To fix permanently:
+```bash
+docker compose exec --user root airflow-webserver chmod -R 777 /opt/airflow/artifacts
+```
+
+### 🟡 Docker Build CI job disabled
+
+Set to `if: false` until Docker Hub secrets are added to GitHub repo.
+
+### 🟡 Windows path with spaces
+
+Do NOT run from a path containing spaces (e.g. `New folder`).
+Move project to `C:\Users\<name>\Desktop\churn_prediction` first.
+
+> See `KNOWN_ISSUES.md` for the full list of 10 known issues with fixes.
+> See `DEBUGGING_LOG.md` for every real error encountered during development.
+
+---
+
+## Daily Commands
+
+```bash
+# Start everything
+docker compose up -d
+
+# Stop everything
+docker compose down
+
+# Check status
+docker compose ps
+
+# View API logs
+docker compose logs api --tail=20
+
+# Restart just the API
+docker compose restart api
 ```
 
 ---
 
-##  Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/your-feature`)
-3. Run `make format && make test` before committing
-4. Push and open a Pull Request — CI runs automatically
-
----
 ## Things I Got Stuck On
 
-- Keeping this here because these took real time to figure out:
+Keeping this here because these took real time to figure out:
 
-- SQLAlchemy 2.x breaks Airflow — had to pin to 1.4.52 and make sure it gets installed last in the Dockerfile otherwise something else overwrites it.
+- **scaler.joblib not persisted** — The scaler is created during training
+  but not committed to git. Every fresh clone needs it regenerated manually.
+  Long-term fix: add it as a startup step in the Airflow DAG.
 
-- MLflow wraps the model in PyFuncModel — calling .predict() returns class labels [0, 1] not probabilities. Spent a  while on this. Fix was to unwrap the booster with model._model_impl.lgb_model and call predict_proba directly.
+- **OHE columns missing on single-row inference** — `pd.get_dummies()` on
+  a single row only creates columns for categories present in that row.
+  Fixed by replacing with manual OHE that always creates all 12 expected columns.
 
-- PowerShell breaks JSON — can't pass JSON with -d flag in PowerShell, it mangles the quotes. Workaround: write JSON to a file, docker cp it into the container, use --data-binary inside.
+- **PowerShell breaks curl syntax** — `-X`, `-H`, `-d` flags don't work in
+  PowerShell. Use Swagger UI at `/docs` or `Invoke-RestMethod` instead.
 
-- SHAP vs numpy version conflict — SHAP 0.51 needs numpy>=2, MLflow 2.13 needs numpy<2. Fixed by pinning shap==0.44.0.
+- **Black/isort version mismatch between local and CI** — Fixed by adding
+  `pyproject.toml` with pinned settings. Without it, the same files fail
+  in CI even after passing locally.
 
-- Bool columns from pd.get_dummies — LightGBM doesn't like bool dtype, fails silently. Had to explicitly check  dtype == bool and cast.
+- **Emoji in nested f-string causes SyntaxError** — Emoji characters inside
+  nested f-strings with escaped quotes confuse Python's tokenizer.
+  Fixed by extracting the emoji string to a variable first.
 
-## Stuff I'd Add With More Time
+- **Docker volume mounts fail on Windows paths with spaces** — airflow-init
+  exits with code 1. Fixed by moving project to a path without spaces.
 
-- proper CI test coverage (currently limited)
-- cloud deployment (everything runs locally for now)
-- real DVC remote storage instead of local
-- better drift alerts
+---
 
+## What I'd Add With More Time
 
-Pratik Patel — Final Year B.Tech CSE (AI/ML), Kalinga University
+- Connect Evidently AI drift detection directly to retraining trigger
+- Cloud deployment (AWS/GCP) — everything runs locally for now
+- Real DVC remote storage (S3/GCS) instead of local
+- Add 500-record limit enforcement on batch endpoint
+- Increase test coverage on monitoring and training modules
+- Add A/B testing framework for model comparison
 
-##  License
+---
+
+## Author
+
+**Pratik Patel** — Final Year B.Tech CSE (AI/ML), Kalinga University
+GitHub: [pratikpatel18](https://github.com/pratikpatel18)
+
+---
+
+## License
 
 MIT License — see [LICENSE](LICENSE) for details.
