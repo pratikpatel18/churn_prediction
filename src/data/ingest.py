@@ -113,9 +113,9 @@ class DataIngester:
 
         # 5. Strip whitespace from string columns
         str_cols = [
-            col for col in df.columns
-            if pd.api.types.is_string_dtype(df[col])
-            or pd.api.types.is_object_dtype(df[col])
+            col
+            for col in df.columns
+            if pd.api.types.is_string_dtype(df[col]) or pd.api.types.is_object_dtype(df[col])
         ]
         for col in str_cols:
             df[col] = df[col].str.strip()
