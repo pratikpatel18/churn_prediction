@@ -63,3 +63,4 @@ artifacts/0/
 
 # Evidently drift reports (generated at runtime)
 artifacts/reports/*.html
+requirements-local.txt
