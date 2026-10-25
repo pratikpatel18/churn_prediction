@@ -99,7 +99,7 @@ class DataIngester:
             raise ValueError(f"Missing expected columns: {missing_cols}")
 
         # 2. TotalCharges often arrives as string with spaces → coerce to float
-        if df["TotalCharges"].dtype == object:
+        if not pd.api.types.is_numeric_dtype(df["TotalCharges"]):
             df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
 
         # 3. Fill NaN TotalCharges with MonthlyCharges (new customers with tenure=0)
@@ -108,11 +108,15 @@ class DataIngester:
         logger.info(f"Imputed {mask.sum()} missing TotalCharges values")
 
         # 4. Standardise Churn column: 'Yes'/'No' → 1/0
-        if df["Churn"].dtype == object:
-            df["Churn"] = df["Churn"].map({"Yes": 1, "No": 0})
+        if not pd.api.types.is_numeric_dtype(df["Churn"]):
+            df["Churn"] = df["Churn"].str.strip().map({"Yes": 1, "No": 0})
 
         # 5. Strip whitespace from string columns
-        str_cols = df.select_dtypes(include="object").columns
+        str_cols = [
+            col for col in df.columns
+            if pd.api.types.is_string_dtype(df[col])
+            or pd.api.types.is_object_dtype(df[col])
+        ]
         for col in str_cols:
             df[col] = df[col].str.strip()
 
